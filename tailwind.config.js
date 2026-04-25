@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans:    ['Space Grotesk', 'system-ui', 'sans-serif'],
-        display: ['Bebas Neue', 'system-ui', 'sans-serif'],
+        sans:    ['Space Grotesk', 'system-ui', 'segoe ui emoji', 'apple color emoji', 'sans-serif'],
+        display: ['Bebas Neue', 'system-ui', 'segoe ui emoji', 'apple color emoji', 'sans-serif'],
         mono:    ['Space Mono', 'monospace'],
       },
       colors: {

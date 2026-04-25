@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react';
+import { useState, type ChangeEvent, useEffect } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useSongPool } from './hooks/useSongPool';
 import { MAX_GUESSES } from './data/songs';
@@ -65,15 +65,17 @@ function ErrorScreen({ message, onRetry }: { message: string; onRetry: () => voi
 
 // ── Game ──────────────────────────────────────────────────────────────────────
 function Game({
-  songs,
   mode,
   onModeChange,
+  game,
+  onPlayNext,
 }: {
   songs: Song[];
   mode: GameMode;
   onModeChange: (m: GameMode) => void;
+  game: ReturnType<typeof useGameEngine>;
+  onPlayNext: () => void;
 }) {
-  const game = useGameEngine(songs);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showHelp, setShowHelp] = useState(false);
   const modeMeta = getGameModeMeta(mode);
@@ -92,8 +94,8 @@ function Game({
     setSelectedSong(null);
   };
 
-  const handlePlayNext = () => {
-    game.nextSong();
+  const handlePlayNextGame = () => {
+    onPlayNext();
     setSelectedSong(null);
   };
 
@@ -271,7 +273,7 @@ function Game({
           gameStatus={game.gameStatus}
           correctSong={game.currentSong}
           guesses={game.guesses}
-          onPlayNext={handlePlayNext}
+          onPlayNext={handlePlayNextGame}
         />
       )}
 
@@ -284,10 +286,47 @@ function Game({
 export default function App() {
   const [mode, setMode] = useState<GameMode>('global-all');
   const pool = useSongPool(mode);
+  
+  // Store one song per category that persists across switches
+  const [categorySeeds, setCategorySeeds] = useState<Record<GameMode, Song | null>>({
+    'global-all': null,
+    'global-hiphop': null,
+    'global-latest': null,
+    'polish-all': null,
+    'polish-hiphop': null,
+    'polish-latest': null,
+  });
+
+  const game = useGameEngine(pool.status === 'ready' ? pool.songs : []);
+
+  // When pool is ready and we don't have a seed for this category, pick one
+  useEffect(() => {
+    if (pool.status === 'ready' && pool.songs.length > 0 && !categorySeeds[mode]) {
+      const randomSong = pool.songs[Math.floor(Math.random() * pool.songs.length)];
+      setCategorySeeds((prev) => ({ ...prev, [mode]: randomSong }));
+      // Load this song into the game
+      game.setSong(randomSong);
+    } else if (pool.status === 'ready' && categorySeeds[mode]) {
+      // We already have a song for this category, load it
+      game.setSong(categorySeeds[mode]!);
+    }
+  }, [mode, pool.status, pool.songs, categorySeeds, game]);
 
   const handleModeChange = (newMode: GameMode) => {
     setMode(newMode);
-    // pool re-fetches automatically via useSongPool's useEffect
+  };
+
+  const handlePlayNext = () => {
+    if (pool.status === 'ready' && pool.songs.length > 0) {
+      // Pick a new random song for this category
+      const eligible = pool.songs.filter((s) => s.id !== game.currentSong.id);
+      const newSong = eligible.length > 0 
+        ? eligible[Math.floor(Math.random() * eligible.length)]
+        : pool.songs[Math.floor(Math.random() * pool.songs.length)];
+      
+      setCategorySeeds((prev) => ({ ...prev, [mode]: newSong }));
+      game.nextSong(newSong);
+    }
   };
 
   // Always render the header area even during loading
@@ -305,7 +344,13 @@ export default function App() {
         )}
 
         {pool.status === 'ready' && (
-          <Game songs={pool.songs} mode={mode} onModeChange={handleModeChange} />
+          <Game 
+            songs={pool.songs} 
+            mode={mode} 
+            onModeChange={handleModeChange}
+            game={game}
+            onPlayNext={handlePlayNext}
+          />
         )}
       </div>
     </div>

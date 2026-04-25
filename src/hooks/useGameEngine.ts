@@ -2,12 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { UNLOCK_STAGES, MAX_GUESSES } from '../data/songs';
 import type { Song, GuessEntry, GameStatus } from '../types';
 
-function pickRandom(pool: Song[], excludeId?: string): Song {
-  const eligible = excludeId ? pool.filter((s) => s.id !== excludeId) : pool;
-  const source = eligible.length > 0 ? eligible : pool;
-  return source[Math.floor(Math.random() * source.length)];
-}
-
 export interface GameState {
   currentSong: Song;
   guesses: GuessEntry[];
@@ -24,20 +18,17 @@ export interface GameActions {
   pause: () => void;
   submitGuess: (song: Song) => void;
   skip: () => void;
-  nextSong: () => void;
+  nextSong: (song: Song) => void;
+  setSong: (song: Song) => void;
   setVolume: (volume: number) => void;
 }
 
 export function useGameEngine(songPool: Song[]): GameState & GameActions {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const unlockedDurationRef = useRef<number>(UNLOCK_STAGES[0]);
-  const poolRef = useRef<Song[]>(songPool);
-
-  // Keep poolRef current so nextSong() always uses the latest pool
-  useEffect(() => { poolRef.current = songPool; }, [songPool]);
 
   const [currentSong, setCurrentSong] = useState<Song>(() =>
-    songPool.length > 0 ? pickRandom(songPool) : ({} as Song),
+    songPool.length > 0 ? songPool[Math.floor(Math.random() * songPool.length)] : ({} as Song),
   );
   const [guesses, setGuesses] = useState<GuessEntry[]>([]);
   const [currentAttempt, setCurrentAttempt] = useState(0);
@@ -47,12 +38,13 @@ export function useGameEngine(songPool: Song[]): GameState & GameActions {
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolumeState] = useState(0.8);
 
-  // ── When the pool first loads, pick a song ────────────────────────────────────
+  // ── Pick initial song only on first render if no song selected yet ────────────
   useEffect(() => {
     if (songPool.length > 0 && !currentSong.id) {
-      setCurrentSong(pickRandom(songPool));
+      const song = songPool[Math.floor(Math.random() * songPool.length)];
+      setCurrentSong(song);
     }
-  }, [songPool, currentSong.id]);
+  }, [songPool.length, currentSong.id]);
 
   // ── Bootstrap audio element ───────────────────────────────────────────────────
   useEffect(() => {
@@ -187,27 +179,29 @@ export function useGameEngine(songPool: Song[]): GameState & GameActions {
   // ── Skip ──────────────────────────────────────────────────────────────────────
   const skip = useCallback(() => {
     if (gameStatus !== 'playing') return;
-    pause();
     advanceAttempt({ status: 'skipped' });
-  }, [gameStatus, advanceAttempt, pause]);
+  }, [gameStatus, advanceAttempt]);
 
   // ── Next song ─────────────────────────────────────────────────────────────────
-  const nextSong = useCallback(() => {
-    pause();
-    const next = pickRandom(poolRef.current, currentSong.id);
+  const nextSong = useCallback((song: Song) => {
     const initial = UNLOCK_STAGES[0];
-    setCurrentSong(next);
+    setCurrentSong(song);
     setGuesses([]);
     setCurrentAttempt(0);
     setUnlockedDuration(initial);
     unlockedDurationRef.current = initial;
     setGameStatus('playing');
     setCurrentTime(0);
-  }, [currentSong.id, pause]);
+  }, []);
+
+  // ── Set song (for category switching) ──────────────────────────────────────────
+  const setSong = useCallback((song: Song) => {
+    setCurrentSong(song);
+  }, []);
 
   return {
     currentSong, guesses, currentAttempt, unlockedDuration,
     gameStatus, isPlaying, currentTime, volume,
-    play, pause, submitGuess, skip, nextSong, setVolume,
+    play, pause, submitGuess, skip, nextSong, setSong, setVolume,
   };
 }
