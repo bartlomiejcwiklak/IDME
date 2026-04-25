@@ -299,17 +299,21 @@ export default function App() {
 
   const game = useGameEngine(pool.status === 'ready' ? pool.songs : []);
 
-  // When pool is ready and we don't have a seed for this category, pick one
+  // When pool is ready, keep an existing valid seed or create a fresh one.
   useEffect(() => {
-    if (pool.status === 'ready' && pool.songs.length > 0 && !categorySeeds[mode]) {
-      const randomSong = pool.songs[Math.floor(Math.random() * pool.songs.length)];
-      setCategorySeeds((prev) => ({ ...prev, [mode]: randomSong }));
-      // Load this song into the game
-      game.setSong(randomSong);
-    } else if (pool.status === 'ready' && categorySeeds[mode]) {
-      // We already have a song for this category, load it
-      game.setSong(categorySeeds[mode]!);
+    if (pool.status !== 'ready' || pool.songs.length === 0) return;
+
+    const currentSeed = categorySeeds[mode];
+    const seedIsInPool = !!currentSeed && pool.songs.some((song) => song.id === currentSeed.id);
+
+    if (seedIsInPool && currentSeed) {
+      game.setSong(currentSeed);
+      return;
     }
+
+    const randomSong = pool.songs[Math.floor(Math.random() * pool.songs.length)];
+    setCategorySeeds((prev) => ({ ...prev, [mode]: randomSong }));
+    game.setSong(randomSong);
   }, [mode, pool.status, pool.songs, categorySeeds, game]);
 
   const handleModeChange = (newMode: GameMode) => {

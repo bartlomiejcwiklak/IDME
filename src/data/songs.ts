@@ -22,11 +22,32 @@ export const UNLOCK_STAGES: number[] = [1, 2, 4, 7, 11, 16];
 
 export const MAX_GUESSES = 6;
 
+const HIPHOP_GENRE_KEYWORDS = [
+  'hip-hop',
+  'hip hop',
+  'rap',
+  'trap',
+  'drill',
+  'grime',
+  'r&b/soul',
+  'rnb/soul',
+  'r&b',
+  'rnb',
+  'urban',
+];
+
+function isHipHopSong(song: Song): boolean {
+  const genre = (song.genre ?? '').toLowerCase();
+  return HIPHOP_GENRE_KEYWORDS.some((keyword) => genre.includes(keyword));
+}
+
 // ─── Pool fetcher ─────────────────────────────────────────────────────────────
 
 export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song[]> {
-  const queries = MODE_CONFIG[mode].queries;
-  const country = MODE_CONFIG[mode].country;
+  const modeConfig = MODE_CONFIG[mode];
+  const queries = modeConfig.queries;
+  const country = modeConfig.country;
+  const isHipHopMode = modeConfig.theme === 'hiphop';
   const BATCH    = 6;
   const songs: Song[] = [];
   const seen = new Set<string>();
@@ -50,6 +71,11 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
     for (const r of results) {
       if (r.status === 'fulfilled' && r.value) {
         const song = itunesToSong(r.value);
+
+        if (isHipHopMode && !isHipHopSong(song)) {
+          continue;
+        }
+
         if (!seen.has(song.id)) {
           seen.add(song.id);
           songs.push(song);
