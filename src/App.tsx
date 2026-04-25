@@ -102,152 +102,148 @@ function Game({
 
   return (
     <div className="min-h-screen flex flex-col items-center">
-      <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-6 py-0 flex flex-col lg:flex-row lg:flex-wrap gap-6">
-        <div className="w-full flex-1 min-w-0 flex flex-col min-h-screen">
-          {/* Header */}
-          <Header
-            logoSrc={logo}
-            onHelpOpen={() => setShowHelp(true)}
-            onSettingsOpen={() => { /* future */ }}
-          />
-          <div className="w-full h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
+      <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-0">
+        <Header
+          logoSrc={logo}
+          onHelpOpen={() => setShowHelp(true)}
+          onSettingsOpen={() => { /* future */ }}
+        />
+      </div>
 
-          {/* Mode dropdown — below the logo */}
-          <div className="px-4 pt-3 pb-1 lg:px-0">
-            <CategoryDropdown value={mode} onChange={onModeChange} />
-          </div>
+      <div className="w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8 pb-16 lg:pb-20">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start">
+          <div className="w-full min-w-0 flex flex-col">
+            <div className="w-full h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
 
-          {/* Main */}
-          <main className="flex-1 flex flex-col gap-4 px-4 py-4 lg:px-0">
+            <div className="px-4 pt-3 pb-1 lg:px-0">
+              <CategoryDropdown value={mode} onChange={onModeChange} />
+            </div>
 
-          {/* Attempts counter */}
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <span className="font-medium tracking-wide uppercase">
-              {game.gameStatus === 'playing'
-                ? `Attempt ${game.currentAttempt + 1} of ${MAX_GUESSES}`
-                : game.gameStatus === 'won'
-                ? '🎉 You guessed it!'
-                : '😔 Out of guesses'}
-            </span>
-            {game.gameStatus === 'playing' && (
-              <span className={`font-semibold tabular-nums ${attemptsLeft <= 2 ? 'text-red-400' : 'text-gray-400'}`}>
-                {attemptsLeft} left
-              </span>
-            )}
-          </div>
-
-          {/* Audio card */}
-          <div className="glass rounded-2xl p-4 flex flex-col items-center gap-4">
-            <div className="w-full flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {gameOver && game.currentSong.artworkUrl ? (
-                  <img
-                    src={game.currentSong.artworkUrl}
-                    alt={game.currentSong.album ?? game.currentSong.title}
-                    className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                  />
-                ) : (
-                  <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0 ${game.isPlaying ? 'animate-pulse-glow' : ''}`}
-                    style={{ background: isPolish ? 'rgba(220,38,38,0.12)' : 'rgba(34,197,94,0.12)' }}
-                  >
-                    {isPolish ? '🇵🇱' : '🎵'}
-                  </div>
+            <main className="flex-1 flex flex-col gap-4 px-4 py-4 lg:px-0">
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span className="font-medium tracking-wide uppercase">
+                  {game.gameStatus === 'playing'
+                    ? `Attempt ${game.currentAttempt + 1} of ${MAX_GUESSES}`
+                    : game.gameStatus === 'won'
+                    ? '🎉 You guessed it!'
+                    : '😔 Out of guesses'}
+                </span>
+                {game.gameStatus === 'playing' && (
+                  <span className={`font-semibold tabular-nums ${attemptsLeft <= 2 ? 'text-red-400' : 'text-gray-400'}`}>
+                    {attemptsLeft} left
+                  </span>
                 )}
-                <div>
-                  {gameOver ? (
-                    <>
-                      <div className="text-sm font-bold leading-tight">{game.currentSong.title}</div>
-                      <div className="text-xs text-gray-400 leading-tight">{game.currentSong.artist}</div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-sm font-semibold text-gray-300">Mystery Track</div>
-                      <div className="text-xs text-gray-600">
-                        {isPolish ? 'Zgadnij piosenkę!' : 'Guess the song!'}
-                      </div>
-                    </>
-                  )}
-                </div>
               </div>
 
-              {game.isPlaying && (
-                <div className="flex items-center gap-1.5 text-acid text-xs font-semibold">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-acid opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-acid" />
-                  </span>
-                  Playing
+              <div className="glass rounded-2xl p-4 flex flex-col items-center gap-4">
+                <div className="w-full flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {gameOver && game.currentSong.artworkUrl ? (
+                      <img
+                        src={game.currentSong.artworkUrl}
+                        alt={game.currentSong.album ?? game.currentSong.title}
+                        className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0 ${game.isPlaying ? 'animate-pulse-glow' : ''}`}
+                        style={{ background: isPolish ? 'rgba(220,38,38,0.12)' : 'rgba(34,197,94,0.12)' }}
+                      >
+                        {isPolish ? '🇵🇱' : '🎵'}
+                      </div>
+                    )}
+                    <div>
+                      {gameOver ? (
+                        <>
+                          <div className="text-sm font-bold leading-tight">{game.currentSong.title}</div>
+                          <div className="text-xs text-gray-400 leading-tight">{game.currentSong.artist}</div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-sm font-semibold text-gray-300">Mystery Track</div>
+                          <div className="text-xs text-gray-600">
+                            {isPolish ? 'Zgadnij piosenkę!' : 'Guess the song!'}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {game.isPlaying && (
+                    <div className="flex items-center gap-1.5 text-acid text-xs font-semibold">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-acid opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-acid" />
+                      </span>
+                      Playing
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <AudioProgressBar
-              currentTime={game.currentTime}
-              unlockedDuration={game.unlockedDuration}
-              isPlaying={game.isPlaying}
-            />
+                <AudioProgressBar
+                  currentTime={game.currentTime}
+                  unlockedDuration={game.unlockedDuration}
+                  isPlaying={game.isPlaying}
+                />
 
-            {/* Play / Pause */}
-            <button
-              id="play-pause-btn"
-              onClick={game.isPlaying ? game.pause : game.play}
-              aria-label={game.isPlaying ? 'Pause' : 'Play'}
-              className="w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-200 active:scale-95"
-              style={{
-                background: game.isPlaying
-                  ? 'rgba(255,255,255,0.15)'
-                  : isPolish ? '#dc2626' : '#22c55e',
-                boxShadow: game.isPlaying
-                  ? undefined
-                  : `0 0 20px ${isPolish ? 'rgba(220,38,38,0.4)' : 'rgba(34,197,94,0.4)'}`,
-              }}
-            >
-              {game.isPlaying ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <rect x="6" y="4" width="4" height="16" rx="1"/>
-                  <rect x="14" y="4" width="4" height="16" rx="1"/>
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                  <polygon points="5 3 19 12 5 21 5 3"/>
-                </svg>
-              )}
-            </button>
+                <button
+                  id="play-pause-btn"
+                  onClick={game.isPlaying ? game.pause : game.play}
+                  aria-label={game.isPlaying ? 'Pause' : 'Play'}
+                  className="w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-200 active:scale-95"
+                  style={{
+                    background: game.isPlaying
+                      ? 'rgba(255,255,255,0.15)'
+                      : isPolish ? '#dc2626' : '#22c55e',
+                    boxShadow: game.isPlaying
+                      ? undefined
+                      : `0 0 20px ${isPolish ? 'rgba(220,38,38,0.4)' : 'rgba(34,197,94,0.4)'}`,
+                  }}
+                >
+                  {game.isPlaying ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <rect x="6" y="4" width="4" height="16" rx="1"/>
+                      <rect x="14" y="4" width="4" height="16" rx="1"/>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                      <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                  )}
+                </button>
 
-            <p className="text-xs text-gray-600 -mt-1">
-              {game.isPlaying
-                ? `${game.currentTime.toFixed(1)}s / ${game.unlockedDuration}s`
-                : `${game.unlockedDuration}s unlocked`}
-            </p>
+                <p className="text-xs text-gray-600 -mt-1">
+                  {game.isPlaying
+                    ? `${game.currentTime.toFixed(1)}s / ${game.unlockedDuration}s`
+                    : `${game.unlockedDuration}s unlocked`}
+                </p>
+              </div>
+
+              <GuessHistory guesses={game.guesses} />
+            </main>
           </div>
 
-          {/* Guess history */}
-          <GuessHistory guesses={game.guesses} />
-
-        </main>
+          {!gameOver && (
+            <aside className="w-full lg:pt-[114px]">
+              <div className="lg:sticky lg:top-4">
+                <SearchBar
+                  selectedSong={selectedSong}
+                  onSelect={setSelectedSong}
+                  onSkip={handleSkip}
+                  onSubmit={handleSubmit}
+                  disabled={gameOver}
+                  searchCountry={searchCountry}
+                  resetKey={mode}
+                />
+              </div>
+            </aside>
+          )}
         </div>
-
-        {!gameOver && (
-          <aside className="w-full lg:w-[420px] lg:pt-[114px]">
-            <div className="lg:sticky lg:top-4">
-              <SearchBar
-                selectedSong={selectedSong}
-                onSelect={setSelectedSong}
-                onSkip={handleSkip}
-                onSubmit={handleSubmit}
-                disabled={gameOver}
-                searchCountry={searchCountry}
-                resetKey={mode}
-              />
-            </div>
-          </aside>
-        )}
-
-        <footer className="w-full lg:order-3 lg:basis-full px-4 py-3 text-center text-[10px] text-gray-700">
-          IDME · {modeMeta.label} · Previews via iTunes
-        </footer>
       </div>
+
+      <footer className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-black/85 px-4 py-3 text-center text-[10px] text-gray-700 backdrop-blur-sm">
+        IDME · {modeMeta.label} · Previews via iTunes
+      </footer>
 
       {gameOver && (
         <EndGameModal
@@ -276,7 +272,7 @@ export default function App() {
   // Always render the header area even during loading
   return (
     <div className="min-h-screen flex flex-col items-center">
-      <div className="w-full max-w-md">
+      <div className="w-full">
 
         {pool.status === 'loading' && <LoadingScreen mode={mode} />}
 
