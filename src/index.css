@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    box-sizing: border-box;
+    border-radius: 0 !important; /* brutalist: no curves */
+  }
+
+  /* exception: keep the play button circle */
+  .circle {
+    border-radius: 9999px !important;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply font-sans antialiased min-h-screen;
+    background:
+      radial-gradient(circle at top, rgba(217, 255, 66, 0.12), transparent 28%),
+      linear-gradient(180deg, #101010 0%, #000000 36%, #000000 100%);
+    color: #ffffff;
+  }
+
+  ::selection {
+    background: #d9ff42;
+    color: #000000;
+  }
+
+  /* Monospace numbers everywhere they appear */
+  .tabular-nums { font-family: 'Space Mono', monospace; }
+}
+
+/* ── Components ───────────────────────────────────────────────────────────── */
+@layer components {
+
+  /* ── Containers ─────────────────────────────────────── */
+  .card {
+    background: #000;
+    border: 2px solid #2a2a2a;
+  }
+
+  .card-accent {
+    background: #000;
+    border: 2px solid #d9ff42;
+    box-shadow: 4px 4px 0px #d9ff42;
+  }
+
+  /* ── Buttons ─────────────────────────────────────────── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           font-sans font-bold text-sm tracking-widest uppercase
+           transition-all duration-100 active:translate-x-[2px] active:translate-y-[2px]
+           disabled:opacity-30 disabled:cursor-not-allowed disabled:active:translate-x-0 disabled:active:translate-y-0;
+    padding: 10px 20px;
+    background: #d9ff42;
+    color: #000000;
+    border: 2px solid #d9ff42;
+    box-shadow: 3px 3px 0px #d9ff42;
+  }
+  .btn-primary:hover:not(:disabled) {
+    box-shadow: 5px 5px 0px #d9ff42;
+    transform: translate(-1px, -1px);
+  }
+  .btn-primary:active:not(:disabled) {
+    box-shadow: 0px 0px 0px #d9ff42;
+    transform: translate(3px, 3px);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2
+           font-sans font-bold text-sm tracking-widest uppercase
+           transition-all duration-100 active:translate-x-[2px] active:translate-y-[2px]
+           disabled:opacity-30 disabled:cursor-not-allowed;
+    padding: 10px 20px;
+    background: #000;
+    color: #ffffff;
+    border: 2px solid #444;
+    box-shadow: 3px 3px 0px #2a2a2a;
+  }
+  .btn-secondary:hover:not(:disabled) {
+    border-color: #fff;
+    box-shadow: 5px 5px 0px #2a2a2a;
+    transform: translate(-1px, -1px);
+  }
+  .btn-secondary:active:not(:disabled) {
+    box-shadow: none;
+    transform: translate(3px, 3px);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center
+           font-sans font-bold text-xs tracking-widest uppercase text-[#555]
+           transition-colors duration-100;
+    padding: 6px 8px;
+    background: transparent;
+    border: 1px solid transparent;
+  }
+  .btn-ghost:hover { color: #d9ff42; border-color: #333; }
+
+  /* ── Guess slots ─────────────────────────────────────── */
+  .guess-slot {
+    @apply w-full flex items-center font-sans font-bold text-sm tracking-wider uppercase;
+    height: 44px;
+    padding: 0 14px;
+    border: 2px solid;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .guess-slot-empty {
+    @apply guess-slot;
+    background: #000;
+    border-color: #1a1a1a;
+    color: transparent;
+  }
+
+  .guess-slot-skipped {
+    @apply guess-slot italic;
+    background: #0a0a0a;
+    border-color: #333;
+    color: #444;
+  }
+
+  .guess-slot-wrong {
+    @apply guess-slot animate-bounce-in;
+    background: #0d0000;
+    border-color: #7f0000;
+    color: #ff3333;
+  }
+
+  .guess-slot-correct {
+    @apply guess-slot animate-bounce-in;
+    background: #0d1100;
+    border-color: #d9ff42;
+    color: #d9ff42;
+    box-shadow: 0 0 0 1px #d9ff42 inset;
+  }
+
+  /* ── Input ────────────────────────────────────────────── */
+  .brutal-input {
+    background: #000;
+    border: 2px solid #333;
+    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500;
+    outline: none;
+    transition: border-color 0.1s;
+  }
+  .brutal-input:focus-within {
+    border-color: #d9ff42;
+    box-shadow: 3px 3px 0px #d9ff42;
+  }
+
+  /* ── Dropdown ─────────────────────────────────────────── */
+  .brutal-dropdown {
+    background: #000;
+    border: 2px solid #d9ff42;
+    border-top: none;
+    box-shadow: 4px 4px 0px #d9ff42;
+  }
+}
+
+/* ── Utilities ─────────────────────────────────────────────────────────────── */
+@layer utilities {
+  .font-display { font-family: 'Bebas Neue', system-ui, sans-serif; }
+  .font-mono-num { font-family: 'Space Mono', monospace; }
+
+  .text-acid    { color: #d9ff42; }
+  .bg-acid      { background: #d9ff42; }
+  .border-acid  { border-color: #d9ff42; }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: #333; }
