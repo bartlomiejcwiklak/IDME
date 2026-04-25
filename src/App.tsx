@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useSongPool } from './hooks/useSongPool';
 import { MAX_GUESSES } from './data/songs';
@@ -97,6 +97,10 @@ function Game({
     setSelectedSong(null);
   };
 
+  const handleVolumeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    game.setVolume(Number(event.target.value));
+  };
+
   const attemptsLeft = MAX_GUESSES - game.currentAttempt;
   const gameOver = game.gameStatus !== 'playing';
 
@@ -115,8 +119,10 @@ function Game({
           <div className="w-full min-w-0 flex flex-col">
             <div className="w-full h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
 
-            <div className="px-4 pt-3 pb-1 lg:px-0">
-              <CategoryDropdown value={mode} onChange={onModeChange} />
+            <div className="px-4 pb-1 lg:px-0">
+              <div className="min-h-[82px] flex items-start">
+                <CategoryDropdown value={mode} onChange={onModeChange} />
+              </div>
             </div>
 
             <main className="flex-1 flex flex-col gap-4 px-4 py-4 lg:px-0">
@@ -192,21 +198,18 @@ function Game({
                   aria-label={game.isPlaying ? 'Pause' : 'Play'}
                   className="w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-200 active:scale-95"
                   style={{
-                    background: game.isPlaying
-                      ? 'rgba(255,255,255,0.15)'
-                      : isPolish ? '#dc2626' : '#22c55e',
-                    boxShadow: game.isPlaying
-                      ? undefined
-                      : `0 0 20px ${isPolish ? 'rgba(220,38,38,0.4)' : 'rgba(34,197,94,0.4)'}`,
+                    background: '#d9ff42',
+                    color: '#000000',
+                    boxShadow: '0 0 20px rgba(217,255,66,0.28)',
                   }}
                 >
                   {game.isPlaying ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                       <rect x="6" y="4" width="4" height="16" rx="1"/>
                       <rect x="14" y="4" width="4" height="16" rx="1"/>
                     </svg>
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24">
                       <polygon points="5 3 19 12 5 21 5 3"/>
                     </svg>
                   )}
@@ -224,17 +227,35 @@ function Game({
           </div>
 
           {!gameOver && (
-            <aside className="w-full lg:pt-[114px]">
-              <div className="lg:sticky lg:top-4">
-                <SearchBar
-                  selectedSong={selectedSong}
-                  onSelect={setSelectedSong}
-                  onSkip={handleSkip}
-                  onSubmit={handleSubmit}
-                  disabled={gameOver}
-                  searchCountry={searchCountry}
-                  resetKey={mode}
-                />
+            <aside className="w-full">
+              <div className="lg:sticky lg:top-4 flex flex-col gap-2">
+                <div className="min-h-[82px] flex flex-col justify-start border-2 border-acid bg-black px-4 py-3 shadow-[4px_4px_0_#d9ff42]">
+                  <div className="flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.28em] text-gray-500">
+                    <span>Master volume</span>
+                    <span className="text-acid font-semibold tracking-normal">{Math.round(game.volume * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={game.volume}
+                    onChange={handleVolumeChange}
+                    aria-label="Master volume"
+                    className="volume-slider mt-3 w-full"
+                  />
+                </div>
+                <div className="lg:pt-[114px]">
+                  <SearchBar
+                    selectedSong={selectedSong}
+                    onSelect={setSelectedSong}
+                    onSkip={handleSkip}
+                    onSubmit={handleSubmit}
+                    disabled={gameOver}
+                    searchCountry={searchCountry}
+                    resetKey={mode}
+                  />
+                </div>
               </div>
             </aside>
           )}

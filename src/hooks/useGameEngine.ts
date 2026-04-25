@@ -16,6 +16,7 @@ export interface GameState {
   gameStatus: GameStatus;
   isPlaying: boolean;
   currentTime: number;
+  volume: number;
 }
 
 export interface GameActions {
@@ -24,6 +25,7 @@ export interface GameActions {
   submitGuess: (song: Song) => void;
   skip: () => void;
   nextSong: () => void;
+  setVolume: (volume: number) => void;
 }
 
 export function useGameEngine(songPool: Song[]): GameState & GameActions {
@@ -43,6 +45,7 @@ export function useGameEngine(songPool: Song[]): GameState & GameActions {
   const [gameStatus, setGameStatus] = useState<GameStatus>('playing');
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [volume, setVolumeState] = useState(0.8);
 
   // ── When the pool first loads, pick a song ────────────────────────────────────
   useEffect(() => {
@@ -56,6 +59,7 @@ export function useGameEngine(songPool: Song[]): GameState & GameActions {
     const audio = new Audio();
     audio.crossOrigin = 'anonymous';
     audio.preload = 'metadata';
+    audio.volume = volume;
     audioRef.current = audio;
 
     const onTimeUpdate = () => {
@@ -85,6 +89,13 @@ export function useGameEngine(songPool: Song[]): GameState & GameActions {
       audio.removeEventListener('error', onError);
     };
   }, []);
+
+  // ── Keep master volume synced to the audio element ──────────────────────────
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
 
   // ── Load new song into audio element ─────────────────────────────────────────
   useEffect(() => {
@@ -116,6 +127,14 @@ export function useGameEngine(songPool: Song[]): GameState & GameActions {
   const pause = useCallback(() => {
     audioRef.current?.pause();
     setIsPlaying(false);
+  }, []);
+
+  const setVolume = useCallback((nextVolume: number) => {
+    const clamped = Math.min(1, Math.max(0, nextVolume));
+    setVolumeState(clamped);
+    if (audioRef.current) {
+      audioRef.current.volume = clamped;
+    }
   }, []);
 
   // ── Advance attempt ───────────────────────────────────────────────────────────
@@ -188,7 +207,7 @@ export function useGameEngine(songPool: Song[]): GameState & GameActions {
 
   return {
     currentSong, guesses, currentAttempt, unlockedDuration,
-    gameStatus, isPlaying, currentTime,
-    play, pause, submitGuess, skip, nextSong,
+    gameStatus, isPlaying, currentTime, volume,
+    play, pause, submitGuess, skip, nextSong, setVolume,
   };
 }

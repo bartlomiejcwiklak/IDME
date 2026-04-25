@@ -18,9 +18,22 @@ export default function SearchBar({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [resultLimit, setResultLimit] = useState(8);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+
+    const syncLimit = () => {
+      setResultLimit(mediaQuery.matches ? 10 : 8);
+    };
+
+    syncLimit();
+    mediaQuery.addEventListener('change', syncLimit);
+    return () => mediaQuery.removeEventListener('change', syncLimit);
+  }, []);
 
   // ── Live iTunes search with 350ms debounce ─────────────────────────────────
   const doSearch = useCallback(async (term: string, country: string) => {
@@ -31,7 +44,7 @@ export default function SearchBar({
     }
     setIsLoading(true);
     try {
-      const tracks = await searchItunes(term, 8, country);
+      const tracks = await searchItunes(term, resultLimit, country);
       const songs = tracks.map((t) => itunesToSong(t));
       setResults(songs);
       setIsOpen(songs.length > 0);
@@ -40,7 +53,7 @@ export default function SearchBar({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [resultLimit]);
 
   // Clear results when the country (mode) changes
   useEffect(() => {
@@ -167,7 +180,7 @@ export default function SearchBar({
         {isOpen && results.length > 0 && (
           <div
             role="listbox"
-            className="absolute z-50 top-full left-0 right-0 mt-1.5 max-h-72 overflow-y-auto border-2 border-acid bg-black shadow-[6px_6px_0_#d9ff42]"
+            className="absolute z-50 top-full left-0 right-0 mt-1.5 max-h-72 lg:max-h-96 overflow-y-auto border-2 border-acid bg-black shadow-[6px_6px_0_#d9ff42]"
             style={{ animation: 'fadeIn 0.15s ease-out' }}
           >
             {results.map((song, idx) => (
