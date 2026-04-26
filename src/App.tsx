@@ -520,8 +520,9 @@ export default function App() {
 
       // If we've played everything, reset the played list
       if (eligible.length === 0) {
-        eligible = pool.songs;
-        // Start fresh played list with the next song
+        // When resetting, avoid picking the same song we just played if possible
+        eligible = pool.songs.filter((s) => s.id !== (currentState.currentSong?.id || ''));
+        if (eligible.length === 0) eligible = pool.songs; // Fallback for 1-song pools
       }
 
       let newSong;

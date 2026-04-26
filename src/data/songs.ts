@@ -205,19 +205,26 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
 
     if (mode === 'artist-discography') {
       if (!artistQuery) return [];
-      // Fetch specifically for the artist using the more precise artistTerm attribute
-      const results = await searchItunes(artistQuery, 200, modeConfig.country, 'artistTerm');
-      pool = results
+      // Fetch from both PL and US stores to get a comprehensive discography
+      const [resultsPl, resultsUs] = await Promise.all([
+        searchItunes(artistQuery, 200, 'pl', 'artistTerm'),
+        searchItunes(artistQuery, 200, 'us', 'artistTerm')
+      ]);
+      
+      const combined = [...resultsPl, ...resultsUs];
+      const search = artistQuery.toLowerCase();
+      
+      const seenIds = new Set<number>();
+      pool = combined
+        .filter(t => {
+          if (seenIds.has(t.trackId)) return false;
+          seenIds.add(t.trackId);
+          return true;
+        })
         .map(itunesToSong)
         .filter(s => {
           const artist = s.artist.toLowerCase();
-          const search = artistQuery.toLowerCase();
-          
-          // Split by common separators to find the primary artist (the first one)
           const primaryArtist = artist.split(/&|,|\bfeat\.|\bft\.|\bwith\b/i)[0].trim();
-          
-          // Strict: must be exact match OR start with the search term
-          // (e.g., "Mata" matches "Mata", "Taco" matches "Taco Hemingway", but "Mata" NO LONGER matches "Vanessa da Mata")
           return primaryArtist === search || primaryArtist.startsWith(search + ' ');
         });
     } else if (isCharts) {
