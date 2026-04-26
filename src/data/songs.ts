@@ -40,6 +40,34 @@ export const GLOBAL_VIP = [
 
 export const BIASED_ARTISTS = [...POLISH_VIP, ...GLOBAL_VIP];
 
+/** Curated gaming albums to ensure high-quality "Gaming" sessions */
+export const GAMING_ALBUMS = [
+  'The Witcher 3: Wild Hunt',
+  'Cyberpunk 2077',
+  'DOOM (Original Game Soundtrack)',
+  'DOOM Eternal (Original Game Soundtrack)',
+  'League of Legends',
+  'Minecraft - Volume Alpha',
+  'Minecraft - Volume Beta',
+  'Grand Theft Auto V',
+  'Red Dead Redemption 2',
+  'The Last of Us',
+  'The Last of Us Part II',
+  'God of War (Original Soundtrack)',
+  'Elden Ring (Original Game Soundtrack)',
+  'Persona 5 (Original Soundtrack)',
+  'Final Fantasy VII Remake',
+  'The Legend of Zelda: Breath of the Wild',
+  'Super Mario Odyssey',
+  'Skyrim (Original Game Soundtrack)',
+  'Fallout 4 (Original Game Soundtrack)',
+  'Halo: Combat Evolved',
+  'Mass Effect',
+  'Uncharted 4: A Thief\'s End',
+  'Silent Hill 2',
+  'Nier: Automata'
+];
+
 export function isBiasedArtist(artistName: string): boolean {
   const lower = artistName.toLowerCase();
   return BIASED_ARTISTS.some(name => {
@@ -172,9 +200,30 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
       pool = pool.filter(isPolishSong);
     }
 
-    // BIAS INJECTION: Ensure biased artists are always present
+    // BIAS INJECTION: Ensure biased artists or curated albums are always present
     const biasedInPool = pool.filter(s => isBiasedArtist(s.artist));
-    if (modeConfig.theme !== 'gaming' && biasedInPool.length < 20) {
+    
+    // For Gaming: Inject curated albums
+    if (modeConfig.theme === 'gaming') {
+      const shuffleAlbums = [...GAMING_ALBUMS].sort(() => Math.random() - 0.5);
+      const targets = shuffleAlbums.slice(0, 10); // Inject 10 legendary albums
+      
+      for (const album of targets) {
+        try {
+          const extra = await searchItunes(album, 10, modeConfig.country);
+          const filteredExtra = extra.map(itunesToSong).filter(s => isGamingSong(s));
+          
+          const existingIds = new Set(pool.map(s => s.id));
+          for (const s of filteredExtra) {
+            if (!existingIds.has(s.id)) {
+              pool.push(s);
+              existingIds.add(s.id);
+            }
+          }
+        } catch (e) {}
+      }
+    } else if (biasedInPool.length < 20) {
+      // For Other: Inject biased artists
       const sourceList = modeConfig.region === 'polish' ? POLISH_VIP : GLOBAL_VIP;
       const shuffleBias = [...sourceList].sort(() => Math.random() - 0.5);
       const targets = shuffleBias.slice(0, 8); // Inject 8 random VIPs

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useSongPool } from './hooks/useSongPool';
-import { MAX_GUESSES, isBiasedArtist } from './data/songs';
+import { MAX_GUESSES, isBiasedArtist, GAMING_ALBUMS } from './data/songs';
 import { getGameModeMeta } from './data/modes';
 import type { Song, GameMode, CategoryState } from './types';
 
@@ -395,11 +395,33 @@ export default function App() {
       }
 
       let newSong;
+      const modeConfig = getGameModeMeta(mode);
+      const isGaming = modeConfig.theme === 'gaming';
+      
+      const curatedGamingEligible = isGaming 
+        ? eligible.filter(s => GAMING_ALBUMS.includes(s.album || '')) 
+        : [];
+      
       const biasEligible = eligible.filter(s => isBiasedArtist(s.artist));
       
-      // 40% chance to pick from biased artists if any are available
-      if (biasEligible.length > 0 && Math.random() < 0.4) {
-        // GROUP BY ARTIST to avoid "song count bias" (where artists with more songs are picked more often)
+      // 1. If Gaming, 50% chance to pick from the curated legendary list
+      if (isGaming && curatedGamingEligible.length > 0 && Math.random() < 0.5) {
+        // GROUP BY ALBUM to avoid "album song count bias"
+        const byAlbum: Record<string, Song[]> = {};
+        curatedGamingEligible.forEach(s => {
+          const albumKey = s.album || 'Unknown';
+          if (!byAlbum[albumKey]) byAlbum[albumKey] = [];
+          byAlbum[albumKey].push(s);
+        });
+        
+        const albums = Object.keys(byAlbum);
+        const randomAlbum = albums[Math.floor(Math.random() * albums.length)];
+        const albumSongs = byAlbum[randomAlbum];
+        newSong = albumSongs[Math.floor(Math.random() * albumSongs.length)];
+      } 
+      // 2. Otherwise, 40% chance to pick from VIP biased artists (for Hip-hop/All)
+      else if (biasEligible.length > 0 && Math.random() < 0.4) {
+        // GROUP BY ARTIST to avoid "artist song count bias"
         const byArtist: Record<string, Song[]> = {};
         biasEligible.forEach(s => {
           if (!byArtist[s.artist]) byArtist[s.artist] = [];
@@ -410,7 +432,9 @@ export default function App() {
         const randomArtist = artists[Math.floor(Math.random() * artists.length)];
         const artistSongs = byArtist[randomArtist];
         newSong = artistSongs[Math.floor(Math.random() * artistSongs.length)];
-      } else {
+      } 
+      // 3. Fallback to true random selection from the whole pool
+      else {
         newSong = eligible[Math.floor(Math.random() * eligible.length)];
       }
 
