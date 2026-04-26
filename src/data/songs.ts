@@ -258,10 +258,10 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
       // We search for multiple broad terms to get a massive pool of ~400+ songs
       let queries: string[] = [];
       if (modeConfig.theme === 'decades') {
-        if (mode === 'decades-80s') queries = ['80s smash hits', '1980s pop', '1980s rock', 'best of 80s', '80s classics'];
-        else if (mode === 'decades-90s') queries = ['90s smash hits', '1990s pop', '90s r&b', 'best of 90s', '90s classics'];
-        else if (mode === 'decades-00s') queries = ['2000s smash hits', '00s pop', '2000s r&b', 'best of 00s', '00s classics'];
-        else if (mode === 'decades-10s') queries = ['2010s smash hits', '2010s pop', '2010s dance', 'best of 2010s'];
+        if (mode === 'decades-80s') queries = ['80s greatest hits', '80s billboard', '1980s top 100', '1980s pop hits', '1980s rock hits'];
+        else if (mode === 'decades-90s') queries = ['90s greatest hits', '90s billboard', '1990s top 100', '1990s pop hits', '1990s r&b hits'];
+        else if (mode === 'decades-00s') queries = ['2000s greatest hits', '2000s billboard', '2000s top 100', '2000s pop hits', '2000s club hits'];
+        else if (mode === 'decades-10s') queries = ['2010s greatest hits', '2010s billboard', '2010s top 100', '2010s pop hits', '2010s viral hits'];
       } else if (modeConfig.theme === 'hiphop') {
         queries = modeConfig.region === 'polish' ? ['rap polski', 'hip hop pl', 'trap polska'] : ['best hip hop', 'rap hits', '90s rap'];
       } else if (modeConfig.theme === 'gaming') {
