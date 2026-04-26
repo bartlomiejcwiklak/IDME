@@ -54,6 +54,17 @@ const HIPHOP_GENRE_KEYWORDS = [
 
 function isHipHopSong(song: Song): boolean {
   const genre = (song.genre ?? '').toLowerCase();
+  const title = (song.title ?? '').toLowerCase();
+  
+  // Strict exclusion: No instrumentals, type beats, or karaoke versions.
+  const isInstrumental = 
+    title.includes('instrumental') || 
+    title.includes('type beat') || 
+    title.includes('beat only') ||
+    title.includes('karaoke');
+
+  if (isInstrumental) return false;
+
   // Must START with one of our keywords to be considered a primary hip-hop/rap track.
   return HIPHOP_GENRE_KEYWORDS.some((keyword) => genre.startsWith(keyword));
 }
