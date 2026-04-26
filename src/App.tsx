@@ -425,8 +425,13 @@ function Game({
       </div>
 
       <footer
-        className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-black/85 px-4 pt-3 text-center text-[10px] text-gray-700 backdrop-blur-sm"
-        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+        className="fixed bottom-0 left-0 right-0 z-20 border-t px-4 pt-3 text-center text-[10px] backdrop-blur-sm"
+        style={{
+          borderColor: 'var(--border-primary)',
+          background: 'var(--glass-dark-bg)',
+          color: 'var(--text-muted)',
+          paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))',
+        }}
       >
         IDME · {modeMeta.label} · Previews via iTunes
       </footer>
