@@ -7,7 +7,7 @@ export interface GameModeMeta {
   loadingText: string;
   country: 'us' | 'pl';
   region: 'global' | 'polish';
-  theme: 'all' | 'hiphop' | 'charts' | 'gaming' | 'decades';
+  theme: 'all' | 'hiphop' | 'charts' | 'gaming' | 'decades' | 'rock' | 'electronic' | 'pop' | 'indie' | 'classics';
   flag: string;
   genreId?: string;
 }
@@ -47,6 +47,46 @@ const MODE_DEFINITIONS: ModeDefinition[] = [
     flag: '🌍',
   },
   {
+    value: 'global-rock',
+    label: 'Global: Rock',
+    description: 'The biggest rock anthems of all time',
+    loadingText: 'Loading rock hits',
+    country: 'us',
+    region: 'global',
+    theme: 'rock',
+    flag: '🎸',
+  },
+  {
+    value: 'global-electronic',
+    label: 'Global: Electronic',
+    description: 'EDM, house, techno & electronic bangers',
+    loadingText: 'Loading electronic tracks',
+    country: 'us',
+    region: 'global',
+    theme: 'electronic',
+    flag: '🎛️',
+  },
+  {
+    value: 'global-pop',
+    label: 'Global: Pop',
+    description: 'The biggest pop hits from around the world',
+    loadingText: 'Loading pop hits',
+    country: 'us',
+    region: 'global',
+    theme: 'pop',
+    flag: '🌟',
+  },
+  {
+    value: 'global-indie',
+    label: 'Global: Indie/Alternative',
+    description: 'Indie, alternative rock and art pop',
+    loadingText: 'Loading indie tracks',
+    country: 'us',
+    region: 'global',
+    theme: 'indie',
+    flag: '🎵',
+  },
+  {
     value: 'polish-all',
     label: 'Polish: All',
     description: 'Popular Polish tracks across genres',
@@ -75,6 +115,16 @@ const MODE_DEFINITIONS: ModeDefinition[] = [
     country: 'pl',
     region: 'polish',
     theme: 'charts',
+    flag: '🇵🇱',
+  },
+  {
+    value: 'polish-classics',
+    label: 'Polish: Classics',
+    description: 'Nostalgiczne polskie klasyki sprzed 2014',
+    loadingText: 'Loading Polish classics',
+    country: 'pl',
+    region: 'polish',
+    theme: 'classics',
     flag: '🇵🇱',
   },
   {

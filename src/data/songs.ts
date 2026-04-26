@@ -98,7 +98,6 @@ function isHipHopSong(song: Song): boolean {
   const genre = (song.genre ?? '').toLowerCase();
   const title = (song.title ?? '').toLowerCase();
 
-  // Strict exclusion: No instrumentals, type beats, or karaoke versions.
   const isInstrumental =
     title.includes('instrumental') ||
     title.includes('type beat') ||
@@ -107,8 +106,35 @@ function isHipHopSong(song: Song): boolean {
 
   if (isInstrumental) return false;
 
-  // Must START with one of our keywords to be considered a primary hip-hop/rap track.
   return HIPHOP_GENRE_KEYWORDS.some((keyword) => genre.startsWith(keyword));
+}
+
+function isRockSong(song: Song): boolean {
+  const genre = (song.genre ?? '').toLowerCase();
+  const title = (song.title ?? '').toLowerCase();
+  if (title.includes('karaoke') || title.includes('instrumental')) return false;
+  return genre.includes('rock') || genre.includes('metal') || genre.includes('punk') || genre.includes('alternative') || genre.includes('grunge');
+}
+
+function isElectronicSong(song: Song): boolean {
+  const genre = (song.genre ?? '').toLowerCase();
+  const title = (song.title ?? '').toLowerCase();
+  if (title.includes('karaoke') || title.includes('instrumental')) return false;
+  return genre.includes('electronic') || genre.includes('dance') || genre.includes('house') || genre.includes('techno') || genre.includes('edm') || genre.includes('trance') || genre.includes('dubstep') || genre.includes('drum and bass');
+}
+
+function isPopSong(song: Song): boolean {
+  const genre = (song.genre ?? '').toLowerCase();
+  const title = (song.title ?? '').toLowerCase();
+  if (title.includes('karaoke') || title.includes('instrumental')) return false;
+  return genre.startsWith('pop') || genre.includes('synth-pop') || genre.includes('k-pop') || genre.includes('dance pop');
+}
+
+function isIndieSong(song: Song): boolean {
+  const genre = (song.genre ?? '').toLowerCase();
+  const title = (song.title ?? '').toLowerCase();
+  if (title.includes('karaoke') || title.includes('instrumental')) return false;
+  return genre.includes('indie') || genre.includes('alternative') || genre.includes('art pop') || genre.includes('lo-fi') || genre.includes('shoegaze') || genre.includes('folk') || genre.includes('emo');
 }
 
 function isGamingSong(song: Song): boolean {
@@ -266,6 +292,16 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
         queries = modeConfig.region === 'polish' ? ['rap polski', 'hip hop pl', 'trap polska'] : ['best hip hop', 'rap hits', '90s rap'];
       } else if (modeConfig.theme === 'gaming') {
         queries = ['official video game soundtrack', 'original game score', 'video game music', 'nintendo music ost', 'gaming ost'];
+      } else if (modeConfig.theme === 'rock') {
+        queries = ['classic rock hits', 'rock anthems', 'best rock songs', 'rock legends', 'arena rock hits', 'alternative rock hits'];
+      } else if (modeConfig.theme === 'electronic') {
+        queries = ['best edm songs', 'electronic dance music hits', 'house music classics', 'techno hits', 'dj hits', 'festival anthems'];
+      } else if (modeConfig.theme === 'pop') {
+        queries = ['best pop songs', 'pop hits all time', 'pop music classics', 'top pop songs', 'pop anthems', 'biggest pop hits'];
+      } else if (modeConfig.theme === 'indie') {
+        queries = ['indie hits', 'alternative indie songs', 'best indie rock', 'indie pop classics', 'alternative music hits', 'indie anthems'];
+      } else if (modeConfig.theme === 'classics') {
+        queries = ['polskie przeboje klasyki', 'polska muzyka lata 90', 'polska muzyka lata 2000', 'polskie hity retro', 'klasyki polskiej muzyki'];
       } else {
         queries = modeConfig.region === 'polish' ? ['polska muzyka', 'polskie hity', 'pop polska'] : ['popular songs', 'top hits', 'all time hits'];
       }
@@ -304,6 +340,26 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
     if (modeConfig.theme === 'gaming') {
       pool = pool.filter(isGamingSong);
     }
+    if (modeConfig.theme === 'rock') {
+      pool = pool.filter(isRockSong);
+    }
+    if (modeConfig.theme === 'electronic') {
+      pool = pool.filter(isElectronicSong);
+    }
+    if (modeConfig.theme === 'pop') {
+      pool = pool.filter(isPopSong);
+    }
+    if (modeConfig.theme === 'indie') {
+      pool = pool.filter(isIndieSong);
+    }
+    if (modeConfig.theme === 'classics') {
+      // Polish Classics: Polish songs released before 2014
+      pool = pool.filter(s => {
+        if (!s.releaseDate) return false;
+        const year = new Date(s.releaseDate).getFullYear();
+        return year < 2014;
+      });
+    }
     if (modeConfig.region === 'polish') {
       pool = pool.filter(isPolishSong);
     }
@@ -312,8 +368,8 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
     const biasedInPool = pool.filter(s => isBiasedArtist(s.artist));
 
     // For Gaming: Inject curated albums
-    if (mode === 'artist-discography' || modeConfig.theme === 'decades') {
-      // No injection for artist-specific mode or decades to preserve strict era filtering
+    if (mode === 'artist-discography' || modeConfig.theme === 'decades' || modeConfig.theme === 'classics') {
+      // No injection for artist-specific mode, decades, or classics (preserve strict era filtering)
     } else if (modeConfig.theme === 'gaming') {
       const shuffleAlbums = [...GAMING_ALBUMS].sort(() => Math.random() - 0.5);
       const targets = shuffleAlbums.slice(0, 10); // Inject 10 legendary albums

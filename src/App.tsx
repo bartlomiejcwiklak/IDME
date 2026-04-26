@@ -19,7 +19,6 @@ import SettingsModal from './components/SettingsModal';
 import ModeSelector from './components/ModeSelector';
 import ModeMenu from './components/ModeMenu';
 import FlagIcon from './components/FlagIcon';
-import Confetti from './components/Confetti';
 
 // ── Loading screen ────────────────────────────────────────────────────────────
 function LoadingScreen({ mode }: { mode: GameMode }) {
@@ -131,6 +130,8 @@ function Game({
   onVolumeChange,
   soundsEnabled,
   onSoundsToggle,
+  theme,
+  onThemeToggle,
 }: {
   songs: Song[];
   mode: GameMode;
@@ -498,9 +499,14 @@ export default function App() {
       'global-hiphop': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'global-charts': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'global-gaming': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'global-rock': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'global-electronic': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'global-pop': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'global-indie': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'polish-all': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'polish-hiphop': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'polish-charts': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'polish-classics': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'artist-discography': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'decades-80s': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'decades-90s': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
