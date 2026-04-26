@@ -39,7 +39,7 @@ const MODE_DEFINITIONS: ModeDefinition[] = [
   {
     value: 'global-charts',
     label: 'Global: Chart Toppers',
-    description: 'Top 200 most popular songs currently being bought and streamed on iTunes.',
+    description: 'Top 200 most popular songs currently streamed globally.',
     loadingText: 'Loading global charts',
     country: 'us',
     region: 'global',
@@ -69,7 +69,7 @@ const MODE_DEFINITIONS: ModeDefinition[] = [
   {
     value: 'polish-hiphop',
     label: 'Polish: Hip-hop',
-    description: 'Rap, trap, drill and friends',
+    description: 'WEYOO WEYOOOO',
     loadingText: 'Loading Polish hip-hop',
     country: 'pl',
     region: 'polish',
@@ -80,7 +80,7 @@ const MODE_DEFINITIONS: ModeDefinition[] = [
   {
     value: 'polish-charts',
     label: 'Polish: Chart Toppers',
-    description: 'Top 200 most popular songs currently being bought and streamed on iTunes in Poland.',
+    description: 'Top 200 most popular songs currently streamed in Poland.',
     loadingText: 'Loading Polish charts',
     country: 'pl',
     region: 'polish',

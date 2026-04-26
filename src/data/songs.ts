@@ -166,6 +166,34 @@ function isPolishSong(song: Song): boolean {
   });
 }
 
+// Lista fraz, które dyskwalifikują utwór (mixy treningowe, karaoke, itp.)
+const BANNED_KEYWORDS = [
+  'workout',
+  'fitness',
+  'gym mix',
+  'bpm',
+  'karaoke',
+  'instrumental version',
+  'tribute to',
+  'cover version',
+  'unmixed',
+  'lo-fi workout',
+  'yoga music',
+  'meditation music',
+];
+
+function isCleanTrack(song: Song): boolean {
+  const title = song.title.toLowerCase();
+  const album = (song.album || '').toLowerCase();
+  const artist = song.artist.toLowerCase();
+
+  return !BANNED_KEYWORDS.some(word =>
+    title.includes(word) ||
+    album.includes(word) ||
+    artist.includes(word)
+  );
+}
+
 // ─── Pool fetcher ─────────────────────────────────────────────────────────────
 
 export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song[]> {
@@ -222,6 +250,8 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
     }
 
     // Apply strict genre/language filters
+    pool = pool.filter(isCleanTrack);
+
     if (modeConfig.theme === 'hiphop') {
       pool = pool.filter(isHipHopSong);
     }
@@ -243,7 +273,7 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
       for (const album of targets) {
         try {
           const extra = await searchItunes(album, 10, modeConfig.country);
-          const filteredExtra = extra.map(itunesToSong).filter(s => isGamingSong(s));
+          const filteredExtra = extra.map(itunesToSong).filter(s => isGamingSong(s) && isCleanTrack(s));
 
           const existingIds = new Set(pool.map(s => s.id));
           for (const s of filteredExtra) {
@@ -264,6 +294,7 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
         try {
           const extra = await searchItunes(artist, 5, modeConfig.country);
           const filteredExtra = extra.map(itunesToSong).filter(s => {
+            if (!isCleanTrack(s)) return false;
             if (modeConfig.theme === 'hiphop' && !isHipHopSong(s)) return false;
             if (modeConfig.region === 'polish' && !isPolishSong(s)) return false;
             return true;
