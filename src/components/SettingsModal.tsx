@@ -1,6 +1,12 @@
 import type { SettingsModalProps } from '../types';
 
-export default function SettingsModal({ volume, onVolumeChange, onClose }: SettingsModalProps) {
+export default function SettingsModal({ 
+  volume, 
+  onVolumeChange, 
+  soundsEnabled,
+  onSoundsToggle,
+  onClose 
+}: SettingsModalProps) {
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onVolumeChange(parseFloat(e.target.value));
   };
@@ -10,7 +16,7 @@ export default function SettingsModal({ volume, onVolumeChange, onClose }: Setti
       role="dialog"
       aria-modal="true"
       aria-label="Settings"
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
+      className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
     >
       <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
 
@@ -27,12 +33,15 @@ export default function SettingsModal({ volume, onVolumeChange, onClose }: Setti
           </button>
         </div>
 
-        <div className="space-y-8">
-          {/* Volume control */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.28em] text-gray-500">
-              <span className="font-bold">Master volume</span>
-              <span className="text-acid font-bold tracking-normal">{Math.round(volume * 100)}%</span>
+        <div className="space-y-4">
+          {/* Master Volume Control */}
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/5 transition-colors space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-bold">Master Volume</div>
+                <div className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Music & Previews</div>
+              </div>
+              <span className="text-acid font-bold text-sm">{Math.round(volume * 100)}%</span>
             </div>
             <div className="flex items-center gap-4">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -49,6 +58,26 @@ export default function SettingsModal({ volume, onVolumeChange, onClose }: Setti
                 className="volume-slider flex-1"
               />
             </div>
+          </div>
+
+          {/* Sound Effects Toggle */}
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 transition-colors">
+            <div>
+              <div className="text-sm font-bold">Sound Effects</div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Interface & Feedback</div>
+            </div>
+            <button
+              onClick={() => onSoundsToggle(!soundsEnabled)}
+              className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-1 ${
+                soundsEnabled ? 'bg-acid' : 'bg-white/20'
+              }`}
+            >
+              <div
+                className={`w-4 h-4 rounded-full transition-transform shadow-sm ${
+                  soundsEnabled ? 'translate-x-6 bg-black' : 'translate-x-0 bg-white'
+                }`}
+              />
+            </button>
           </div>
 
           <div className="p-4 rounded-xl bg-white/[0.04] border border-white/[0.06]">

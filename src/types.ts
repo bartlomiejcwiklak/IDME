@@ -92,5 +92,7 @@ export interface HelpModalProps {
 export interface SettingsModalProps {
   volume: number;
   onVolumeChange: (volume: number) => void;
+  soundsEnabled: boolean;
+  onSoundsToggle: (enabled: boolean) => void;
   onClose: () => void;
 }

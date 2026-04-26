@@ -127,6 +127,8 @@ function Game({
   onPlayNext,
   volume,
   onVolumeChange,
+  soundsEnabled,
+  onSoundsToggle,
 }: {
   songs: Song[];
   mode: GameMode;
@@ -136,6 +138,8 @@ function Game({
   onPlayNext: () => void;
   volume: number;
   onVolumeChange: (v: number) => void;
+  soundsEnabled: boolean;
+  onSoundsToggle: (enabled: boolean) => void;
 }) {
   const game = useGameEngine();
 
@@ -447,6 +451,8 @@ function Game({
         <SettingsModal
           volume={volume}
           onVolumeChange={onVolumeChange}
+          soundsEnabled={soundsEnabled}
+          onSoundsToggle={onSoundsToggle}
           onClose={() => setShowSettings(false)}
         />
       )}
@@ -526,6 +532,16 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('idme-volume', volume.toString());
   }, [volume]);
+
+  const [soundsEnabled, setSoundsEnabled] = useState(() => {
+    const saved = localStorage.getItem('idme-sounds-enabled');
+    return saved !== null ? saved === 'true' : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('idme-sounds-enabled', soundsEnabled.toString());
+    soundService.setEnabled(soundsEnabled);
+  }, [soundsEnabled]);
 
   const handleStateChange = useCallback((state: Partial<CategoryState>) => {
     setCategoryStates((prev) => {
@@ -669,6 +685,8 @@ export default function App() {
             onPlayNext={handlePlayNext}
             volume={volume}
             onVolumeChange={setVolume}
+            soundsEnabled={soundsEnabled}
+            onSoundsToggle={setSoundsEnabled}
           />
         )}
       </div>

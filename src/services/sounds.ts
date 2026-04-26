@@ -4,9 +4,14 @@ import clickSfx from '../sounds/click.wav';
 
 class SoundService {
   private volume: number = 0.5;
+  private enabled: number = 1; // Use 1/0 for easier state management or just boolean
 
   setVolume(v: number) {
     this.volume = v;
+  }
+
+  setEnabled(e: boolean) {
+    this.enabled = e ? 1 : 0;
   }
 
   playCorrect() {
@@ -22,12 +27,10 @@ class SoundService {
   }
 
   private play(src: string, volMultiplier: number = 1) {
+    if (!this.enabled) return;
     const audio = new Audio(src);
     audio.volume = this.volume * volMultiplier;
-    audio.play().catch(() => {
-      // Browsers often block audio until first interaction, 
-      // which is fine for sfx as they happen after interaction anyway.
-    });
+    audio.play().catch(() => {});
   }
 }
 
