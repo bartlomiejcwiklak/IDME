@@ -106,13 +106,13 @@ function Game({
       // Apply the same bias logic for the initial pick
       const biasEligible = songs.filter(s => isBiasedArtist(s.artist));
       let initialSong;
-      
+
       if (biasEligible.length > 0 && Math.random() < 0.4) {
         initialSong = biasEligible[Math.floor(Math.random() * biasEligible.length)];
       } else {
         initialSong = songs[Math.floor(Math.random() * songs.length)];
       }
-      
+
       game.reset(initialSong);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -180,8 +180,8 @@ function Game({
                   {game.gameStatus === 'playing'
                     ? `Attempt ${game.currentAttempt + 1} of ${MAX_GUESSES}`
                     : game.gameStatus === 'won'
-                    ? '🎉 You guessed it!'
-                    : '😔 Out of guesses'}
+                      ? '🎉 You guessed it!'
+                      : '😔 Out of guesses'}
                 </span>
                 {game.gameStatus === 'playing' && (
                   <span className={`font-semibold tabular-nums ${attemptsLeft <= 2 ? 'text-red-400' : 'text-gray-400'}`}>
@@ -254,12 +254,12 @@ function Game({
                 >
                   {game.isPlaying ? (
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                      <rect x="6" y="4" width="4" height="16" rx="1"/>
-                      <rect x="14" y="4" width="4" height="16" rx="1"/>
+                      <rect x="6" y="4" width="4" height="16" rx="1" />
+                      <rect x="14" y="4" width="4" height="16" rx="1" />
                     </svg>
                   ) : (
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                      <polygon points="5 3 19 12 5 21 5 3"/>
+                      <polygon points="5 3 19 12 5 21 5 3" />
                     </svg>
                   )}
                 </button>
@@ -309,7 +309,7 @@ function Game({
       )}
 
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
-      
+
       {showSettings && (
         <SettingsModal
           volume={volume}
@@ -379,15 +379,15 @@ export default function App() {
     if (pool.status === 'ready' && pool.songs.length > 0) {
       const currentState = categoryStates[mode];
       const played = currentState.playedIds || [];
-      
+
       // Update played IDs with the song we just finished
-      const updatedPlayed = currentState.currentSong 
+      const updatedPlayed = currentState.currentSong
         ? Array.from(new Set([...played, currentState.currentSong.id]))
         : played;
 
       // Filter pool for unplayed songs
       let eligible = pool.songs.filter((s) => !updatedPlayed.includes(s.id));
-      
+
       // If we've played everything, reset the played list
       if (eligible.length === 0) {
         eligible = pool.songs;
@@ -397,15 +397,15 @@ export default function App() {
       let newSong;
       const modeConfig = getGameModeMeta(mode);
       const isGaming = modeConfig.theme === 'gaming';
-      
-      const curatedGamingEligible = isGaming 
-        ? eligible.filter(s => GAMING_ALBUMS.includes(s.album || '')) 
+
+      const curatedGamingEligible = isGaming
+        ? eligible.filter(s => GAMING_ALBUMS.includes(s.album || ''))
         : [];
-      
+
       const biasEligible = eligible.filter(s => isBiasedArtist(s.artist));
-      
-      // 1. If Gaming, 50% chance to pick from the curated legendary list
-      if (isGaming && curatedGamingEligible.length > 0 && Math.random() < 0.5) {
+
+      // 1. If Gaming, 80% chance to pick from the curated legendary list
+      if (isGaming && curatedGamingEligible.length > 0 && Math.random() < 0.8) {
         // GROUP BY ALBUM to avoid "album song count bias"
         const byAlbum: Record<string, Song[]> = {};
         curatedGamingEligible.forEach(s => {
@@ -413,12 +413,12 @@ export default function App() {
           if (!byAlbum[albumKey]) byAlbum[albumKey] = [];
           byAlbum[albumKey].push(s);
         });
-        
+
         const albums = Object.keys(byAlbum);
         const randomAlbum = albums[Math.floor(Math.random() * albums.length)];
         const albumSongs = byAlbum[randomAlbum];
         newSong = albumSongs[Math.floor(Math.random() * albumSongs.length)];
-      } 
+      }
       // 2. Otherwise, 40% chance to pick from VIP biased artists (for Hip-hop/All)
       else if (biasEligible.length > 0 && Math.random() < 0.4) {
         // GROUP BY ARTIST to avoid "artist song count bias"
@@ -427,24 +427,24 @@ export default function App() {
           if (!byArtist[s.artist]) byArtist[s.artist] = [];
           byArtist[s.artist].push(s);
         });
-        
+
         const artists = Object.keys(byArtist);
         const randomArtist = artists[Math.floor(Math.random() * artists.length)];
         const artistSongs = byArtist[randomArtist];
         newSong = artistSongs[Math.floor(Math.random() * artistSongs.length)];
-      } 
+      }
       // 3. Fallback to true random selection from the whole pool
       else {
         newSong = eligible[Math.floor(Math.random() * eligible.length)];
       }
 
-      const newState: CategoryState = { 
-        currentSong: newSong, 
-        guesses: [], 
+      const newState: CategoryState = {
+        currentSong: newSong,
+        guesses: [],
         gameStatus: 'playing',
         playedIds: updatedPlayed.length >= pool.songs.length ? [newSong.id] : updatedPlayed
       };
-      
+
       setCategoryStates((prev) => ({ ...prev, [mode]: newState }));
     }
   };

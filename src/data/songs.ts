@@ -25,7 +25,7 @@ export const MAX_GUESSES = 6;
 
 /** Artists that should appear more frequently (40% of games) */
 export const POLISH_VIP = [
-  'Taco Hemingway', 'Mata', 'Bedoes', 'Kizo', 'White 2115', 'Oki', 'Szpaku', 
+  'Taco Hemingway', 'Mata', 'Bedoes', 'Kizo', 'White 2115', 'Oki', 'Szpaku',
   'Gibbs', 'Smolasty', 'Sobel', 'Quebonafide', 'Malik Montana', 'Young Leosia',
   'PRO8L3M', 'Pezet', 'Sokół', 'Avi', 'Guzior', 'Kukon', 'Miszel', 'Zdechły Osa'
 ];
@@ -55,7 +55,6 @@ export const GAMING_ALBUMS = [
   'The Last of Us Part II',
   'God of War (Original Soundtrack)',
   'Elden Ring (Original Game Soundtrack)',
-  'Persona 5 (Original Soundtrack)',
   'Final Fantasy VII Remake',
   'The Legend of Zelda: Breath of the Wild',
   'Super Mario Odyssey',
@@ -65,7 +64,9 @@ export const GAMING_ALBUMS = [
   'Mass Effect',
   'Uncharted 4: A Thief\'s End',
   'Silent Hill 2',
-  'Nier: Automata'
+  'Nier: Automata',
+  'Hollow Knight',
+  'Hollow Knight: Silksong'
 ];
 
 export function isBiasedArtist(artistName: string): boolean {
@@ -90,11 +91,11 @@ const HIPHOP_GENRE_KEYWORDS = [
 function isHipHopSong(song: Song): boolean {
   const genre = (song.genre ?? '').toLowerCase();
   const title = (song.title ?? '').toLowerCase();
-  
+
   // Strict exclusion: No instrumentals, type beats, or karaoke versions.
-  const isInstrumental = 
-    title.includes('instrumental') || 
-    title.includes('type beat') || 
+  const isInstrumental =
+    title.includes('instrumental') ||
+    title.includes('type beat') ||
     title.includes('beat only') ||
     title.includes('karaoke');
 
@@ -107,15 +108,15 @@ function isHipHopSong(song: Song): boolean {
 function isGamingSong(song: Song): boolean {
   const genre = (song.genre ?? '').toLowerCase();
   const album = (song.album ?? '').toLowerCase();
-  
+
   // Reject common movie soundtrack keywords
   if (album.includes('motion picture') || album.includes('movie soundtrack') || album.includes('from the film')) return false;
-  
+
   // Stricter gaming indicators
-  const isVideoGame = 
-    genre.includes('video game') || 
-    album.includes('video game') || 
-    album.includes('game score') || 
+  const isVideoGame =
+    genre.includes('video game') ||
+    album.includes('video game') ||
+    album.includes('game score') ||
     album.includes('ost') ||
     album.includes('soundtrack') ||
     album.includes('official soundtrack');
@@ -133,8 +134,8 @@ function isPolishSong(song: Song): boolean {
   }
 
   const polishArtists = [
-    'Taco Hemingway', 'Quebonafide', 'Bedoes', 'Kizo', 'Malik Montana', 'Young Leosia', 
-    'Mata', 'Sobel', 'Smolasty', 'White 2115', 'Oki', 'Szpaku', 'Gibbs', 'Sanah', 
+    'Taco Hemingway', 'Quebonafide', 'Bedoes', 'Kizo', 'Malik Montana', 'Young Leosia',
+    'Mata', 'Sobel', 'Smolasty', 'White 2115', 'Oki', 'Szpaku', 'Gibbs', 'Sanah',
     'Dawid Podsiadło', 'Mrozu', 'Brodka', 'Daria Zawiałow', 'Zalewski', 'Margaret',
     'Kult', 'Dżem', 'Lady Pank', 'Perfect', 'Myslovitz', 'Happysad', 'Pidżama Porno',
     'Strachy na Lachy', 'T.Love', 'Vito Bambino', 'PRO8L3M', 'Sokół', 'Pezet', 'Hemp Gru',
@@ -159,7 +160,7 @@ function isPolishSong(song: Song): boolean {
 export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song[]> {
   const modeConfig = MODE_CONFIG[mode];
   const isCharts = modeConfig.theme === 'charts';
-  
+
   try {
     let pool: Song[] = [];
 
@@ -170,16 +171,16 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
     } else {
       // General/Hip-Hop categories: Use search for broader, "evergreen" popular variety
       // We search for multiple broad terms to get a massive pool of ~400+ songs
-      const queries = modeConfig.theme === 'hiphop' 
+      const queries = modeConfig.theme === 'hiphop'
         ? (modeConfig.region === 'polish' ? ['rap polski', 'hip hop pl', 'trap polska'] : ['best hip hop', 'rap hits', '90s rap'])
         : modeConfig.theme === 'gaming'
-        ? ['official video game soundtrack', 'original game score', 'video game music', 'nintendo music ost', 'gaming ost']
-        : (modeConfig.region === 'polish' ? ['polska muzyka', 'polskie hity', 'pop polska'] : ['popular songs', 'top hits', 'all time hits']);
+          ? ['official video game soundtrack', 'original game score', 'video game music', 'nintendo music ost', 'gaming ost']
+          : (modeConfig.region === 'polish' ? ['polska muzyka', 'polskie hity', 'pop polska'] : ['popular songs', 'top hits', 'all time hits']);
 
       const results = await Promise.all(
         queries.map(q => searchItunes(q, 150, modeConfig.country))
       );
-      
+
       const seenIds = new Set<string>();
       results.flat().forEach(t => {
         if (!seenIds.has(String(t.trackId))) {
@@ -202,17 +203,17 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
 
     // BIAS INJECTION: Ensure biased artists or curated albums are always present
     const biasedInPool = pool.filter(s => isBiasedArtist(s.artist));
-    
+
     // For Gaming: Inject curated albums
     if (modeConfig.theme === 'gaming') {
       const shuffleAlbums = [...GAMING_ALBUMS].sort(() => Math.random() - 0.5);
       const targets = shuffleAlbums.slice(0, 10); // Inject 10 legendary albums
-      
+
       for (const album of targets) {
         try {
           const extra = await searchItunes(album, 10, modeConfig.country);
           const filteredExtra = extra.map(itunesToSong).filter(s => isGamingSong(s));
-          
+
           const existingIds = new Set(pool.map(s => s.id));
           for (const s of filteredExtra) {
             if (!existingIds.has(s.id)) {
@@ -220,14 +221,14 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
               existingIds.add(s.id);
             }
           }
-        } catch (e) {}
+        } catch (e) { }
       }
     } else if (biasedInPool.length < 20) {
       // For Other: Inject biased artists
       const sourceList = modeConfig.region === 'polish' ? POLISH_VIP : GLOBAL_VIP;
       const shuffleBias = [...sourceList].sort(() => Math.random() - 0.5);
       const targets = shuffleBias.slice(0, 8); // Inject 8 random VIPs
-      
+
       for (const artist of targets) {
         try {
           const extra = await searchItunes(artist, 5, modeConfig.country);
@@ -236,7 +237,7 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
             if (modeConfig.region === 'polish' && !isPolishSong(s)) return false;
             return true;
           });
-          
+
           const existingIds = new Set(pool.map(s => s.id));
           for (const s of filteredExtra) {
             if (!existingIds.has(s.id)) {
@@ -244,10 +245,10 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
               existingIds.add(s.id);
             }
           }
-        } catch (e) {}
+        } catch (e) { }
       }
     }
-    
+
     if (pool.length === 0) throw new Error('No songs found matching the criteria.');
 
     // Fisher-Yates Shuffle
