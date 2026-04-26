@@ -1,4 +1,4 @@
-import { fetchTopChartsMeta, resolveTracksWithPreview, searchItunes, type ItunesTrack } from '../services/itunes';
+import { fetchTopChartsMeta, resolveTracksWithPreview, searchItunes, type ItunesTrack, PROXY } from '../services/itunes';
 import type { Song, GameMode } from '../types';
 import { MODE_CONFIG } from './modes';
 
@@ -200,10 +200,14 @@ async function fetchSpotifyPlaylistTracks(url: string): Promise<{ title: string,
   const match = url.match(/playlist\/([a-zA-Z0-9]+)/);
   if (!match) return [];
   const id = match[1];
-  const proxy = import.meta.env.VITE_ITUNES_PROXY || 'https://itunes-proxy.bartlomiejcwiklak.workers.dev';
-  
+
+  if (!PROXY) {
+    console.warn('No PROXY configured — cannot fetch Spotify playlist.');
+    return [];
+  }
+
   try {
-    const res = await fetch(`${proxy}/spotify/${id}`);
+    const res = await fetch(`${PROXY}/spotify/${id}`);
     if (!res.ok) return [];
     const data = await res.json();
     
