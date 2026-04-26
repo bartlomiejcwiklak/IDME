@@ -225,7 +225,9 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
         .filter(s => {
           const artist = s.artist.toLowerCase();
           const primaryArtist = artist.split(/&|,|\bfeat\.|\bft\.|\bwith\b/i)[0].trim();
-          return primaryArtist === search || primaryArtist.startsWith(search + ' ');
+          // Strict: the primary artist must be an EXACT match for the search term
+          // This allows "Mata" and "Mata & White 2115", but rejects "Mata Mandir Singh"
+          return primaryArtist === search;
         });
     } else if (isCharts) {
       // "Chart Toppers" category: Apple RSS only reliably serves 'topsongs' (max 100).
