@@ -249,7 +249,6 @@ export function useGameEngine(): GameState & GameActions {
   const skip = useCallback(() => {
     if (gameStatus !== 'playing') return;
     advanceAttempt({ status: 'skipped' });
-    soundService.playWrong();
   }, [gameStatus, advanceAttempt]);
 
   // ── Next song ─────────────────────────────────────────────────────────────────
