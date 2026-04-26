@@ -207,7 +207,6 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
       if (!artistQuery) return [];
       // Fetch specifically for the artist using the more precise artistTerm attribute
       const results = await searchItunes(artistQuery, 200, modeConfig.country, 'artistTerm');
-      const searchLower = artistQuery.toLowerCase();
       pool = results
         .map(itunesToSong)
         .filter(s => {
