@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useSongPool } from './hooks/useSongPool';
-import { MAX_GUESSES, isBiasedArtist, GAMING_ALBUMS } from './data/songs';
+import { MAX_GUESSES, isBiasedArtist, isCuratedGamingAlbum, GAMING_ALBUMS } from './data/songs';
 import { getGameModeMeta } from './data/modes';
 import type { Song, GameMode, CategoryState } from './types';
 
@@ -399,7 +399,7 @@ export default function App() {
       const isGaming = modeConfig.theme === 'gaming';
 
       const curatedGamingEligible = isGaming
-        ? eligible.filter(s => GAMING_ALBUMS.includes(s.album || ''))
+        ? eligible.filter(s => isCuratedGamingAlbum(s.album || ''))
         : [];
 
       const biasEligible = eligible.filter(s => isBiasedArtist(s.artist));

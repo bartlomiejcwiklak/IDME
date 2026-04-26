@@ -79,6 +79,11 @@ export function isBiasedArtist(artistName: string): boolean {
   });
 }
 
+export function isCuratedGamingAlbum(albumName: string): boolean {
+  const lower = (albumName || '').toLowerCase();
+  return GAMING_ALBUMS.some(curated => lower.includes(curated.toLowerCase()));
+}
+
 const HIPHOP_GENRE_KEYWORDS = [
   'hip-hop',
   'hip hop',
