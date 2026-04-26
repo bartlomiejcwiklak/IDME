@@ -47,6 +47,7 @@ export const GAMING_ALBUMS = [
   'DOOM (Original Game Soundtrack)',
   'DOOM Eternal (Original Game Soundtrack)',
   'League of Legends',
+  'Minecraft',
   'Minecraft - Volume Alpha',
   'Minecraft - Volume Beta',
   'Grand Theft Auto V',
