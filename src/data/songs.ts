@@ -205,12 +205,18 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
 
     if (mode === 'artist-discography') {
       if (!artistQuery) return [];
-      // Fetch specifically for the artist
-      const results = await searchItunes(artistQuery, 200, modeConfig.country);
+      // Fetch specifically for the artist using the more precise artistTerm attribute
+      const results = await searchItunes(artistQuery, 200, modeConfig.country, 'artistTerm');
       const searchLower = artistQuery.toLowerCase();
       pool = results
         .map(itunesToSong)
-        .filter(s => s.artist.toLowerCase().includes(searchLower));
+        .filter(s => {
+          const artist = s.artist.toLowerCase();
+          // Regex ensures the search term matches as a whole word (prevents "Eduardo Mata" matching just "Mata" if we want strictly "Mata")
+          // but still allows for common separators like "&", "feat.", etc.
+          const regex = new RegExp(`(^|\\b)${searchLower}(\\b|$)`, 'i');
+          return regex.test(artist);
+        });
     } else if (isCharts) {
       // "Chart Toppers" category: Apple RSS only reliably serves 'topsongs' (max 100).
       // Supplement with search queries for variety and to pad the pool.
@@ -274,7 +280,9 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
     const biasedInPool = pool.filter(s => isBiasedArtist(s.artist));
 
     // For Gaming: Inject curated albums
-    if (modeConfig.theme === 'gaming') {
+    if (mode === 'artist-discography') {
+      // No injection for artist-specific mode
+    } else if (modeConfig.theme === 'gaming') {
       const shuffleAlbums = [...GAMING_ALBUMS].sort(() => Math.random() - 0.5);
       const targets = shuffleAlbums.slice(0, 10); // Inject 10 legendary albums
 

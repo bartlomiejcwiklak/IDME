@@ -42,9 +42,11 @@ export async function searchItunes(
   term: string,
   limit = 8,
   country = 'us',
+  attribute?: string
 ): Promise<ItunesTrack[]> {
   if (!term.trim()) return [];
-  const url = `${BASE_SEARCH}?term=${encodeURIComponent(term)}&entity=song&media=music&limit=${limit * 2}&country=${country}`;
+  const attrSegment = attribute ? `&attribute=${attribute}` : '';
+  const url = `${BASE_SEARCH}?term=${encodeURIComponent(term)}&entity=song&media=music&limit=${limit * 2}&country=${country}${attrSegment}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`iTunes API error: ${res.status}`);
   const data: ItunesResponse = await res.json();
