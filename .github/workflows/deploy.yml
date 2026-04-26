@@ -33,6 +33,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_ITUNES_PROXY: ${{ secrets.VITE_ITUNES_PROXY }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
