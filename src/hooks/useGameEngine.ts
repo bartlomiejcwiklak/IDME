@@ -11,6 +11,7 @@ export interface GameState {
   isPlaying: boolean;
   currentTime: number;
   volume: number;
+  audioError: string | null;
 }
 
 export interface GameActions {
@@ -23,6 +24,7 @@ export interface GameActions {
   loadState: (state: CategoryState) => void;
   reset: (song: Song) => void;
   setVolume: (volume: number) => void;
+  retryLoad: () => void;
 }
 
 export function useGameEngine(): GameState & GameActions {
@@ -37,11 +39,12 @@ export function useGameEngine(): GameState & GameActions {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolumeState] = useState(0.8);
+  const [audioError, setAudioError] = useState<string | null>(null);
 
   // ── Bootstrap audio element ───────────────────────────────────────────────────
   useEffect(() => {
     const audio = new Audio();
-    audio.crossOrigin = 'anonymous';
+    // Removed crossOrigin = 'anonymous' to fix mobile Safari loading issues
     audio.preload = 'metadata';
     audio.volume = volume;
     audioRef.current = audio;
@@ -100,7 +103,9 @@ export function useGameEngine(): GameState & GameActions {
       cancelAnimationFrame(rafId);
     };
 
-    const onError = () => {
+    const onError = (e: any) => {
+      console.error('Audio load error:', e);
+      setAudioError('Failed to load audio. Please check your connection.');
       setIsPlaying(false);
       cancelAnimationFrame(rafId);
     };
@@ -147,8 +152,9 @@ export function useGameEngine(): GameState & GameActions {
     const audio = audioRef.current;
     if (!audio || !currentSong.audioUrl) return;
     audio.pause();
+    setAudioError(null);
     audio.src = currentSong.audioUrl;
-    audio.load();
+    // Removed explicit audio.load() as setting src is enough and more stable on mobile
     setIsPlaying(false);
     setCurrentTime(0);
   }, [currentSong]);
@@ -282,15 +288,25 @@ export function useGameEngine(): GameState & GameActions {
     unlockedDurationRef.current = initial;
     setGameStatus('playing');
     setCurrentTime(0);
+    setAudioError(null);
   }, []);
+
+  const retryLoad = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentSong.audioUrl) return;
+    audio.pause();
+    setAudioError(null);
+    audio.src = currentSong.audioUrl;
+    setCurrentTime(0);
+  }, [currentSong]);
 
   return useMemo(() => ({
     currentSong, guesses, currentAttempt, unlockedDuration,
-    gameStatus, isPlaying, currentTime, volume,
-    play, pause, submitGuess, skip, nextSong, setSong, loadState, reset, setVolume,
+    gameStatus, isPlaying, currentTime, volume, audioError,
+    play, pause, submitGuess, skip, nextSong, setSong, loadState, reset, setVolume, retryLoad,
   }), [
     currentSong, guesses, currentAttempt, unlockedDuration,
-    gameStatus, isPlaying, currentTime, volume,
-    play, pause, submitGuess, skip, nextSong, setSong, loadState, reset, setVolume,
+    gameStatus, isPlaying, currentTime, volume, audioError,
+    play, pause, submitGuess, skip, nextSong, setSong, loadState, reset, setVolume, retryLoad,
   ]);
 }
