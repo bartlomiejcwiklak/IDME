@@ -285,8 +285,8 @@ function Game({
                         </>
                       ) : (
                         <>
-                          <div className="text-sm font-semibold text-gray-300">Mystery Track</div>
-                          <div className="text-xs text-gray-600">
+                          <div className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Mystery Track</div>
+                          <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
                             Guess the song!
                           </div>
                         </>
@@ -322,13 +322,15 @@ function Game({
                     <div className="flex gap-2">
                       <button 
                         onClick={game.retryLoad}
-                        className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-[10px] font-bold uppercase tracking-wider transition-colors"
+                        className="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors"
+                        style={{ background: 'var(--glass-bg)', color: 'var(--text-primary)' }}
                       >
                         Retry
                       </button>
                       <button 
                         onClick={handleSkip}
-                        className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-[10px] font-bold uppercase tracking-wider transition-colors"
+                        className="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors"
+                        style={{ background: 'var(--glass-bg)', color: 'var(--text-primary)' }}
                       >
                         Skip Song
                       </button>
@@ -376,9 +378,9 @@ function Game({
             <aside className="w-full">
               <div className="lg:sticky lg:top-4 flex flex-col gap-6">
                 {/* Stats Box */}
-                <div className="glass rounded-xl border border-white/5 shadow-xl overflow-hidden">
+                <div className="glass rounded-xl shadow-xl overflow-hidden" style={{ borderColor: 'var(--border-secondary)', border: '1px solid' }}>
                   {/* Primary: Streaks */}
-                  <div className="flex items-center justify-between gap-4 px-4 py-3 border-b border-white/5">
+                  <div className="flex items-center justify-between gap-4 px-4 py-3" style={{ borderBottom: '1px solid var(--border-primary)' }}>
                     <div className="flex flex-col">
                       <span className="text-[9px] uppercase tracking-[0.2em] text-gray-500 font-bold mb-1">Current Streak</span>
                       <div className="flex items-baseline gap-1.5">
@@ -390,21 +392,21 @@ function Game({
                     <div className="flex flex-col text-right">
                       <span className="text-[9px] uppercase tracking-[0.2em] text-gray-500 font-bold mb-1">Best Streak</span>
                       <div className="flex items-baseline gap-1.5 justify-end">
-                        <span className="text-xl font-black text-white tabular-nums leading-none">{initialState.bestStreak || 0}</span>
-                        <span className="text-[9px] text-white/40 font-bold">WINS</span>
+                        <span className="text-xl font-black tabular-nums leading-none" style={{ color: 'var(--text-primary)' }}>{initialState.bestStreak || 0}</span>
+                        <span className="text-[9px] font-bold" style={{ color: 'var(--text-muted)' }}>WINS</span>
                       </div>
                     </div>
                   </div>
                   
                   {/* Secondary: Totals */}
-                  <div className="grid grid-cols-2 bg-black/40">
-                    <div className="px-4 py-2 flex items-center justify-between border-r border-white/5">
-                      <span className="text-[9px] uppercase tracking-widest text-gray-600 font-bold">Solved</span>
-                      <span className="text-sm font-bold text-gray-300 tabular-nums">{initialState.totalCorrect || 0}</span>
+                  <div className="grid grid-cols-2" style={{ background: 'var(--glass-dark-bg)' }}>
+                    <div className="px-4 py-2 flex items-center justify-between border-r" style={{ borderColor: 'var(--border-primary)' }}>
+                      <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: 'var(--text-muted)' }}>Solved</span>
+                      <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--text-secondary)' }}>{initialState.totalCorrect || 0}</span>
                     </div>
                     <div className="px-4 py-2 flex items-center justify-between">
-                      <span className="text-[9px] uppercase tracking-widest text-gray-600 font-bold">Failed</span>
-                      <span className="text-sm font-bold text-gray-300 tabular-nums">{initialState.totalWrong || 0}</span>
+                      <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: 'var(--text-muted)' }}>Failed</span>
+                      <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--text-secondary)' }}>{initialState.totalWrong || 0}</span>
                     </div>
                   </div>
                 </div>
