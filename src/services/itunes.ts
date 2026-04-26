@@ -63,36 +63,69 @@ export async function fetchSingleTrack(
   return results[0] ?? null;
 }
 
-/**
- * Fetch top charts via RSS feed.
- */
-export async function fetchTopCharts(
-  limit = 50,
+export interface RssTrack {
+  id: number;
+  name: string;
+  artistName: string;
+  albumName: string;
+  artworkUrl100: string;
+  primaryGenreName: string;
+  releaseDate: string;
+}
+
+let rssCache: RssTrack[] = [];
+let rssCacheTime = 0;
+const RSS_CACHE_TTL = 5 * 60 * 1000;
+
+export async function fetchTopChartsMeta(
+  limit = 100,
   country = 'us',
   genreId?: string,
   type: 'topsongs' | 'newreleases' = 'topsongs'
-): Promise<ItunesTrack[]> {
-  const genreSegment = genreId ? `/genre=${genreId}` : '';
-  const url = `${BASE_RSS}/${country}/rss/${type}/limit=${limit}${genreSegment}/json`;
+): Promise<RssTrack[]> {
+  if (rssCache.length > 0 && Date.now() - rssCacheTime < RSS_CACHE_TTL) {
+    return rssCache;
+  }
+
+  const feedType = type === 'topsongs' ? 'most-played' : 'new-music';
+  const genreSegment = genreId ? `?genreId=${genreId}` : '';
+
+  // Nowe Apple RSS API — zupełnie inna struktura URL
+  const newApiUrl = `https://rss.applemarketingtools.com/api/v2/${country}/music/${feedType}/${limit}/songs.json${genreSegment}`;
+
+  // Przez proxy jeśli ustawione (dla iOS), bezpośrednio lokalnie
+  const url = PROXY
+    ? `${PROXY}/api/v2/${country}/music/${feedType}/${limit}/songs.json${genreSegment}`
+    : newApiUrl;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`iTunes RSS error: ${res.status}`);
 
   const data = await res.json();
-  const entries = data.feed?.entry || [];
+  const results = data.feed?.results || [];
 
-  return entries.map((entry: any): ItunesTrack => {
-    const audioLink = entry.link?.find((l: any) => l.attributes?.['im:assetType'] === 'preview');
+  const tracks = results.map((entry: any): RssTrack => ({
+    id: Number(entry.id),
+    name: entry.name,
+    artistName: entry.artistName,
+    albumName: entry.albumName || '',
+    artworkUrl100: entry.artworkUrl100 || '',
+    primaryGenreName: entry.genres?.[0]?.name || '',
+    releaseDate: entry.releaseDate || '',
+  })).filter((t: RssTrack) => !!t.id);
 
-    return {
-      trackId: Number(entry.id.attributes?.['im:id']),
-      trackName: entry['im:name'].label,
-      artistName: entry['im:artist'].label,
-      collectionName: entry['im:collection']?.['im:name']?.label || '',
-      previewUrl: audioLink?.attributes?.href || '',
-      artworkUrl100: entry['im:image']?.[entry['im:image'].length - 1]?.label || '',
-      primaryGenreName: entry.category?.attributes?.label || '',
-      releaseDate: entry['im:releaseDate']?.label || '',
-    };
-  }).filter((t: ItunesTrack) => !!t.previewUrl && !!t.trackId);
+  rssCache = tracks;
+  rssCacheTime = Date.now();
+
+  return tracks;
+}
+
+export async function resolveTracksWithPreview(tracks: RssTrack[], country = 'us'): Promise<ItunesTrack[]> {
+  const resolved = await Promise.all(
+    tracks.map(async (t) => {
+      const results = await searchItunes(`${t.name} ${t.artistName}`, 1, country);
+      return results[0] ?? null;
+    })
+  );
+  return resolved.filter((t): t is ItunesTrack => t !== null);
 }

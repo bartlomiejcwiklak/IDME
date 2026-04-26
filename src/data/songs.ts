@@ -1,4 +1,4 @@
-import { fetchTopCharts, searchItunes, type ItunesTrack } from '../services/itunes';
+import { fetchTopChartsMeta, resolveTracksWithPreview, searchItunes, type ItunesTrack } from '../services/itunes';
 import type { Song, GameMode } from '../types';
 import { MODE_CONFIG } from './modes';
 
@@ -182,8 +182,12 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
         ? ['polskie przeboje', 'polska muzyka 2024']
         : ['top hits 2024', 'popular music'];
 
+      const poolMeta = await fetchTopChartsMeta(100, modeConfig.country, undefined, 'topsongs');
+      const selected = poolMeta.sort(() => Math.random() - 0.5).slice(0, 7);
+      const gameTracks = await resolveTracksWithPreview(selected, modeConfig.country);
+
       const [rssResults, ...searchResults] = await Promise.all([
-        fetchTopCharts(100, modeConfig.country, undefined, 'topsongs'),
+        Promise.resolve(gameTracks),
         ...chartsQueries.map(q => searchItunes(q, 100, modeConfig.country)),
       ]);
 
