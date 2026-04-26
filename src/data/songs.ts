@@ -233,17 +233,22 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
       if (!artistQuery) return [];
       const search = artistQuery.toLowerCase();
 
-      // 1. Primary artist search (valid iTunes attribute)
-      // 2. Featured artist search — iTunes includes all artists in the artistName field,
-      //    e.g. "Taco Hemingway feat. Mata", so searching "feat. Mata" finds those tracks
-      const [plPrimary, usPrimary, plFeat, usFeat] = await Promise.all([
+      // Run multiple search strategies in parallel to surface as much of the
+      // discography as possible. iTunes ranks by popularity so a single query
+      // will miss older / less-charted albums.
+      //  1. artistTerm  — exact primary-artist field match (PL + US stores)
+      //  2. feat. query — catches tracks where this artist is featured
+      //  3. plain term  — unattributed search; picks up different ranking order
+      const [plPrimary, usPrimary, plFeat, usFeat, plPlain, usPlain] = await Promise.all([
         searchItunes(artistQuery, 200, 'pl', 'artistTerm'),
         searchItunes(artistQuery, 200, 'us', 'artistTerm'),
         searchItunes(`feat. ${artistQuery}`, 200, 'pl'),
         searchItunes(`feat. ${artistQuery}`, 200, 'us'),
+        searchItunes(artistQuery, 200, 'pl'),
+        searchItunes(artistQuery, 200, 'us'),
       ]);
 
-      const combined = [...plPrimary, ...usPrimary, ...plFeat, ...usFeat];
+      const combined = [...plPrimary, ...usPrimary, ...plFeat, ...usFeat, ...plPlain, ...usPlain];
 
       const seenIds = new Set<number>();
       pool = combined
