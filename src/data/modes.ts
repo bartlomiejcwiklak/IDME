@@ -137,16 +137,6 @@ const MODE_DEFINITIONS: ModeDefinition[] = [
     theme: 'decades',
     flag: '📱',
   },
-  {
-    value: 'spotify-playlist',
-    label: 'Spotify Playlist',
-    description: 'Paste a Spotify link and guess',
-    loadingText: 'Fetching playlist tracks',
-    country: 'us',
-    region: 'global',
-    theme: 'spotify',
-    flag: '🟢',
-  },
 ];
 
 export const GAME_MODE_OPTIONS = MODE_DEFINITIONS.map((option) => option);

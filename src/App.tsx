@@ -621,7 +621,6 @@ export default function App() {
     if (newMode !== mode) {
       setPrevMode(mode);
       setArtistQuery(''); 
-      setSpotifyUrl('');
       setMode(newMode);
     }
   };

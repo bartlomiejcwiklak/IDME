@@ -196,37 +196,7 @@ function isCleanTrack(song: Song): boolean {
 
 // ─── Pool fetcher ─────────────────────────────────────────────────────────────
 
-async function fetchSpotifyPlaylistTracks(url: string): Promise<{ title: string, artist: string }[]> {
-  const match = url.match(/playlist\/([a-zA-Z0-9]+)/);
-  if (!match) return [];
-  const id = match[1];
-
-  if (!PROXY) {
-    console.warn('No PROXY configured — cannot fetch Spotify playlist.');
-    return [];
-  }
-
-  try {
-    const res = await fetch(`${PROXY}/spotify/${id}`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    
-    // Spotify Embed JSON structure
-    const tracks = data?.tracks?.items || data?.entries || [];
-    return tracks.map((item: any) => {
-      const t = item.track || item;
-      return {
-        title: t.name,
-        artist: t.artists?.map((a: any) => a.name).join(', ') || ''
-      };
-    }).filter((t: any) => t.title && t.artist);
-  } catch (e) {
-    console.error('Spotify fetch error:', e);
-    return [];
-  }
-}
-
-export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?: string, spotifyUrl?: string): Promise<Song[]> {
+export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?: string): Promise<Song[]> {
   const modeConfig = MODE_CONFIG[mode];
   const isCharts = modeConfig.theme === 'charts';
 
