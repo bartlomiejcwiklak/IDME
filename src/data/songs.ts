@@ -1,4 +1,4 @@
-import { fetchTopChartsMeta, resolveTracksWithPreview, searchItunes, type ItunesTrack } from '../services/itunes';
+import { fetchTopChartsMeta, resolveTracksWithPreview, searchItunes, lookupArtistId, lookupArtistAlbums, lookupAlbumTracks, type ItunesTrack } from '../services/itunes';
 import type { Song, GameMode } from '../types';
 import { MODE_CONFIG } from './modes';
 
@@ -233,40 +233,64 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
       if (!artistQuery) return [];
       const search = artistQuery.toLowerCase();
 
-      // Run multiple search strategies in parallel to surface as much of the
-      // discography as possible. iTunes ranks by popularity so a single query
-      // will miss older / less-charted albums.
-      //  1. artistTerm  — exact primary-artist field match (PL + US stores)
-      //  2. feat. query — catches tracks where this artist is featured
-      //  3. plain term  — unattributed search; picks up different ranking order
-      const [plPrimary, usPrimary, plFeat, usFeat, plPlain, usPlain] = await Promise.all([
-        searchItunes(artistQuery, 200, 'pl', 'artistTerm'),
-        searchItunes(artistQuery, 200, 'us', 'artistTerm'),
+      // ── Strategy 1: iTunes Lookup API (complete discography) ──────────────────
+      // Resolve artistId → all albumIds → all tracks per album.
+      // This is the only way to guarantee full coverage regardless of popularity.
+      const artistIdPl = await lookupArtistId(artistQuery, 'pl');
+      const artistIdUs = await lookupArtistId(artistQuery, 'us');
+
+      const albumIdSet = new Set<number>();
+      if (artistIdPl) {
+        const albums = await lookupArtistAlbums(artistIdPl, 'pl');
+        albums.forEach(id => albumIdSet.add(id));
+      }
+      if (artistIdUs) {
+        const albums = await lookupArtistAlbums(artistIdUs, 'us');
+        albums.forEach(id => albumIdSet.add(id));
+      }
+
+      if (albumIdSet.size > 0) {
+        // Fetch all tracks for every album in parallel
+        const albumTrackArrays = await Promise.all(
+          [...albumIdSet].map(albumId => lookupAlbumTracks(albumId, 'us').catch(() => [] as ItunesTrack[]))
+        );
+        const seenIds = new Set<number>();
+        pool = albumTrackArrays
+          .flat()
+          .filter(t => {
+            if (seenIds.has(t.trackId)) return false;
+            seenIds.add(t.trackId);
+            return true;
+          })
+          .map(itunesToSong)
+          .filter(s => {
+            const allArtists = s.artist
+              .toLowerCase()
+              .split(/&|,|\bfeat\.|\bft\.|\bwith\b/i)
+              .map(a => a.trim());
+            return allArtists.includes(search);
+          });
+      }
+
+      // ── Strategy 2: Search fallback (catches features, fills gaps) ────────────
+      // Also search "feat. Artist" to pick up tracks where they are a guest.
+      const [plFeat, usFeat] = await Promise.all([
         searchItunes(`feat. ${artistQuery}`, 200, 'pl'),
         searchItunes(`feat. ${artistQuery}`, 200, 'us'),
-        searchItunes(artistQuery, 200, 'pl'),
-        searchItunes(artistQuery, 200, 'us'),
       ]);
 
-      const combined = [...plPrimary, ...usPrimary, ...plFeat, ...usFeat, ...plPlain, ...usPlain];
-
-      const seenIds = new Set<number>();
-      pool = combined
-        .filter(t => {
-          if (seenIds.has(t.trackId)) return false;
-          seenIds.add(t.trackId);
-          return true;
-        })
-        .map(itunesToSong)
-        .filter(s => {
-          // Split the full artist string on all common separators, then check
-          // if any of the resulting parts exactly matches the searched artist name
-          const allArtists = s.artist
-            .toLowerCase()
-            .split(/&|,|\bfeat\.|\bft\.|\bwith\b/i)
-            .map(a => a.trim());
-          return allArtists.includes(search);
-        });
+      const existingIds = new Set(pool.map(s => s.id));
+      [...plFeat, ...usFeat].forEach(t => {
+        if (existingIds.has(String(t.trackId))) return;
+        const allArtists = (t.artistName ?? '')
+          .toLowerCase()
+          .split(/&|,|\bfeat\.|\bft\.|\bwith\b/i)
+          .map(a => a.trim());
+        if (allArtists.includes(search)) {
+          pool.push(itunesToSong(t));
+          existingIds.add(String(t.trackId));
+        }
+      });
     } else if (isCharts) {
       // "Chart Toppers" category: Apple RSS only reliably serves 'topsongs' (max 100).
       // Supplement with search queries for variety and to pad the pool.

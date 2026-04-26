@@ -35,6 +35,43 @@ const PROXY = _rawProxy
   ? (_rawProxy.startsWith('http') ? _rawProxy : `https://${_rawProxy}`)
   : undefined;
 const BASE_SEARCH = PROXY ? `${PROXY}/search` : 'https://itunes.apple.com/search';
+const BASE_LOOKUP = PROXY ? `${PROXY}/lookup` : 'https://itunes.apple.com/lookup';
+
+/** Resolve an artist name to their iTunes artistId (returns first match) */
+export async function lookupArtistId(artistName: string, country = 'us'): Promise<number | null> {
+  const url = `${BASE_SEARCH}?term=${encodeURIComponent(artistName)}&entity=musicArtist&attribute=artistTerm&limit=5&country=${country}`;
+  const res = await fetch(url);
+  if (!res.ok) return null;
+  const data = await res.json();
+  const artists: any[] = data.results ?? [];
+  // Find the closest name match (case-insensitive exact match first)
+  const lower = artistName.toLowerCase();
+  const exact = artists.find((a: any) => (a.artistName ?? '').toLowerCase() === lower);
+  return (exact ?? artists[0])?.artistId ?? null;
+}
+
+/** Fetch all album collectionIds for a given artistId */
+export async function lookupArtistAlbums(artistId: number, country = 'us'): Promise<number[]> {
+  const url = `${BASE_LOOKUP}?id=${artistId}&entity=album&limit=200&country=${country}`;
+  const res = await fetch(url);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.results ?? [])
+    .filter((r: any) => r.wrapperType === 'collection')
+    .map((r: any) => r.collectionId as number);
+}
+
+/** Fetch all tracks with a preview URL for a given album collectionId */
+export async function lookupAlbumTracks(albumId: number, country = 'us'): Promise<ItunesTrack[]> {
+  const url = `${BASE_LOOKUP}?id=${albumId}&entity=song&limit=200&country=${country}`;
+  const res = await fetch(url);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.results ?? []).filter(
+    (t: any): t is ItunesTrack =>
+      t.wrapperType === 'track' && !!t.trackId && !!t.trackName && !!t.artistName && !!t.previewUrl,
+  );
+}
 
 
 /** Search iTunes and return tracks that have a preview URL */

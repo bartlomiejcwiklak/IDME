@@ -24,8 +24,8 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
 
-    // Only allow the two iTunes endpoints we use
-    const allowed = ['/search', '/rss/'];
+    // Only allow the iTunes endpoints we use
+    const allowed = ['/search', '/lookup', '/rss/', '/api/v2/'];
     if (!allowed.some((p) => url.pathname.startsWith(p))) {
       return new Response('Not found', { status: 404 });
     }
