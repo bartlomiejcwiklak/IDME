@@ -207,7 +207,10 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
       if (!artistQuery) return [];
       // Fetch specifically for the artist
       const results = await searchItunes(artistQuery, 200, modeConfig.country);
-      pool = results.map(itunesToSong);
+      const searchLower = artistQuery.toLowerCase();
+      pool = results
+        .map(itunesToSong)
+        .filter(s => s.artist.toLowerCase().includes(searchLower));
     } else if (isCharts) {
       // "Chart Toppers" category: Apple RSS only reliably serves 'topsongs' (max 100).
       // Supplement with search queries for variety and to pad the pool.
