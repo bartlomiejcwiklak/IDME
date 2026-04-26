@@ -29,25 +29,16 @@ export default function GuessHistory({ guesses }: Pick<GuessHistoryProps, 'guess
             {/* Attempt number badge */}
             <span
               className={`mr-3 w-5 h-5 flex-shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold border transition-colors duration-300 ${
-                guess.status === 'correct'
-                  ? 'border-acid text-acid'
-                  : guess.status === 'correct-artist'
-                  ? 'border-amber-500 text-amber-500'
-                  : guess.status === 'wrong'
-                  ? 'border-red-700 text-red-400'
-                  : ''
-              }`}
-              style={
                 guess.status === 'empty'
-                  ? { borderColor: 'var(--border-primary)', color: 'var(--text-muted)' }
+                  ? 'border-white/10 text-gray-600'
                   : guess.status === 'correct'
-                  ? { background: 'var(--bg-primary)' }
+                  ? 'border-acid text-acid bg-[#0d1100]'
                   : guess.status === 'correct-artist'
-                  ? { background: 'var(--bg-primary)' }
+                  ? 'border-amber-500 text-amber-500 bg-[#110d00]'
                   : guess.status === 'wrong'
-                  ? undefined
-                  : undefined
-              }
+                  ? 'border-red-700 text-red-400 bg-red-950/40'
+                  : 'border-gray-700 text-gray-500'
+              }`}
             >
               {idx + 1}
             </span>
