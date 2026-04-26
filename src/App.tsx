@@ -4,6 +4,7 @@ import { useSongPool } from './hooks/useSongPool';
 import { MAX_GUESSES, isBiasedArtist, isCuratedGamingAlbum } from './data/songs';
 import { getGameModeMeta } from './data/modes';
 import type { Song, GameMode, CategoryState } from './types';
+import { soundService } from './services/sounds';
 
 import logo from './logo.png';
 
@@ -459,6 +460,23 @@ export default function App() {
   const [prevMode, setPrevMode] = useState<GameMode>('global-all');
   const [artistQuery, setArtistQuery] = useState('');
   const pool = useSongPool(mode, artistQuery);
+
+  // Global click sound effect
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.closest('button') || 
+        target.closest('a') || 
+        target.closest('[role="button"]') ||
+        target.closest('input[type="checkbox"]')
+      ) {
+        soundService.playClick();
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, []);
 
   // Store full game state per category that persists across switches and refreshes
   const [categoryStates, setCategoryStates] = useState<Record<GameMode, CategoryState>>(() => {

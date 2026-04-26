@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { UNLOCK_STAGES, MAX_GUESSES } from '../data/songs';
 import type { Song, GuessEntry, GameStatus, CategoryState } from '../types';
+import { soundService } from '../services/sounds';
 
 export interface GameState {
   currentSong: Song;
@@ -145,6 +146,7 @@ export function useGameEngine(): GameState & GameActions {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
+    soundService.setVolume(volume);
   }, [volume]);
 
   // ── Load new song into audio element ─────────────────────────────────────────
@@ -235,8 +237,10 @@ export function useGameEngine(): GameState & GameActions {
       setUnlockedDuration(30);
       unlockedDurationRef.current = 30;
       setGameStatus('won');
+      soundService.playCorrect();
     } else {
       advanceAttempt(entry);
+      soundService.playWrong();
     }
     pause();
   }, [gameStatus, currentSong, advanceAttempt, pause]);
@@ -245,6 +249,7 @@ export function useGameEngine(): GameState & GameActions {
   const skip = useCallback(() => {
     if (gameStatus !== 'playing') return;
     advanceAttempt({ status: 'skipped' });
+    soundService.playWrong();
   }, [gameStatus, advanceAttempt]);
 
   // ── Next song ─────────────────────────────────────────────────────────────────
