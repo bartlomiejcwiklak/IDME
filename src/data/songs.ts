@@ -273,14 +273,16 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
       }
 
       // ── Strategy 2: Search fallback (catches features, fills gaps) ────────────
-      // Also search "feat. Artist" to pick up tracks where they are a guest.
-      const [plFeat, usFeat] = await Promise.all([
+      // Search both "feat." and "ft." variants since iTunes is inconsistent in tagging.
+      const [plFeat, usFeat, plFt, usFt] = await Promise.all([
         searchItunes(`feat. ${artistQuery}`, 200, 'pl'),
         searchItunes(`feat. ${artistQuery}`, 200, 'us'),
+        searchItunes(`ft. ${artistQuery}`, 200, 'pl'),
+        searchItunes(`ft. ${artistQuery}`, 200, 'us'),
       ]);
 
       const existingIds = new Set(pool.map(s => s.id));
-      [...plFeat, ...usFeat].forEach(t => {
+      [...plFeat, ...usFeat, ...plFt, ...usFt].forEach(t => {
         if (existingIds.has(String(t.trackId))) return;
         const allArtists = (t.artistName ?? '')
           .toLowerCase()

@@ -126,6 +126,7 @@ function Game({
   onStateChange,
   onModeChange,
   onPlayNext,
+  onResetArtist,
   volume,
   onVolumeChange,
   soundsEnabled,
@@ -139,6 +140,7 @@ function Game({
   onStateChange: (state: Partial<CategoryState>) => void;
   onModeChange: (m: GameMode) => void;
   onPlayNext: () => void;
+  onResetArtist: () => void;
   volume: number;
   onVolumeChange: (v: number) => void;
   soundsEnabled: boolean;
@@ -240,7 +242,9 @@ function Game({
             <div className="px-4 pb-4 lg:px-0">
               <ModeSelector 
                 value={mode} 
-                onOpenMenu={() => setShowModeMenu(true)} 
+                onOpenMenu={() => setShowModeMenu(true)}
+                isArtistMode={mode === 'artist-discography'}
+                onResetArtist={onResetArtist}
               />
             </div>
 
@@ -715,6 +719,7 @@ export default function App() {
             onStateChange={handleStateChange}
             onModeChange={handleModeChange}
             onPlayNext={handlePlayNext}
+            onResetArtist={() => setArtistQuery('')}
             volume={volume}
             onVolumeChange={setVolume}
             soundsEnabled={soundsEnabled}

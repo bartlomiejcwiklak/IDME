@@ -5,9 +5,11 @@ import FlagIcon from './FlagIcon';
 interface ModeSelectorProps {
   value: GameMode;
   onOpenMenu: () => void;
+  isArtistMode?: boolean;
+  onResetArtist?: () => void;
 }
 
-export default function ModeSelector({ value, onOpenMenu }: ModeSelectorProps) {
+export default function ModeSelector({ value, onOpenMenu, isArtistMode, onResetArtist }: ModeSelectorProps) {
   const selected = getGameModeMeta(value);
 
   return (
@@ -26,6 +28,20 @@ export default function ModeSelector({ value, onOpenMenu }: ModeSelectorProps) {
           </div>
         </div>
       </div>
+
+      {/* Reset Artist Button — only in Artist Fan mode */}
+      {isArtistMode && onResetArtist && (
+        <button
+          onClick={onResetArtist}
+          title="Pick a different artist"
+          className="h-[64px] w-[64px] flex items-center justify-center rounded-2xl border transition-all hover:bg-white/10 flex-shrink-0"
+          style={{ borderColor: 'var(--border-primary)', background: 'var(--glass-bg)', color: 'var(--text-muted)' }}
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+      )}
 
       {/* Change Button */}
       <button
