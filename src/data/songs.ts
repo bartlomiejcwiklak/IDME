@@ -69,6 +69,25 @@ function isHipHopSong(song: Song): boolean {
   return HIPHOP_GENRE_KEYWORDS.some((keyword) => genre.startsWith(keyword));
 }
 
+function isGamingSong(song: Song): boolean {
+  const genre = (song.genre ?? '').toLowerCase();
+  const album = (song.album ?? '').toLowerCase();
+  
+  // Reject common movie soundtrack keywords
+  if (album.includes('motion picture') || album.includes('movie soundtrack') || album.includes('from the film')) return false;
+  
+  // Stricter gaming indicators
+  const isVideoGame = 
+    genre.includes('video game') || 
+    album.includes('video game') || 
+    album.includes('game score') || 
+    album.includes('ost') ||
+    album.includes('soundtrack') ||
+    album.includes('official soundtrack');
+
+  return isVideoGame;
+}
+
 /** 
  * Heuristic to detect Polish songs/artists.
  */
@@ -119,7 +138,7 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
       const queries = modeConfig.theme === 'hiphop' 
         ? (modeConfig.region === 'polish' ? ['rap polski', 'hip hop pl', 'trap polska'] : ['best hip hop', 'rap hits', '90s rap'])
         : modeConfig.theme === 'gaming'
-        ? ['video game soundtrack', 'original game score', 'gaming music hits', 'nintendo music', 'league of legends music']
+        ? ['official video game soundtrack', 'original game score', 'video game music', 'nintendo music ost', 'gaming ost']
         : (modeConfig.region === 'polish' ? ['polska muzyka', 'polskie hity', 'pop polska'] : ['popular songs', 'top hits', 'all time hits']);
 
       const results = await Promise.all(
@@ -139,13 +158,16 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
     if (modeConfig.theme === 'hiphop') {
       pool = pool.filter(isHipHopSong);
     }
+    if (modeConfig.theme === 'gaming') {
+      pool = pool.filter(isGamingSong);
+    }
     if (modeConfig.region === 'polish') {
       pool = pool.filter(isPolishSong);
     }
 
     // BIAS INJECTION: Ensure biased artists are always present
     const biasedInPool = pool.filter(s => isBiasedArtist(s.artist));
-    if (biasedInPool.length < 20) {
+    if (modeConfig.theme !== 'gaming' && biasedInPool.length < 20) {
       const shuffleBias = [...BIASED_ARTISTS].sort(() => Math.random() - 0.5);
       const targets = shuffleBias.slice(0, 8); // Inject 8 random VIPs
       

@@ -1,5 +1,6 @@
 import type { GameMode } from '../types';
 import { getGameModeMeta } from '../data/modes';
+import GamepadIcon from './GamepadIcon';
 
 interface FlagIconProps {
   mode: GameMode;
@@ -20,11 +21,10 @@ export default function FlagIcon({ mode, className = "w-5 h-4" }: FlagIconProps)
     );
   }
 
-  // For Global, we can use an emoji as it's well-supported, 
-  // or a simple globe SVG for maximum consistency.
+  // Use emojis for Global categories for a more vibrant look
   return (
-    <span className="text-lg leading-none" role="img" aria-label="Global">
-      🌍
+    <span className="text-lg leading-none" role="img">
+      {meta.flag}
     </span>
   );
 }
