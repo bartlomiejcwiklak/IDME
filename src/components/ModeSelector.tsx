@@ -13,15 +13,15 @@ export default function ModeSelector({ value, onOpenMenu }: ModeSelectorProps) {
   return (
     <div className="w-full flex items-center gap-3">
       {/* Active Mode Info */}
-      <div className="flex-1 min-w-0 h-[64px] flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-2 transition-all">
+      <div className="flex-1 min-w-0 h-[64px] flex items-center gap-3 border rounded-2xl px-4 py-2 transition-all" style={{ background: 'var(--glass-bg)', borderColor: 'var(--border-primary)' }}>
         <div className="flex-shrink-0 text-xl">
           <FlagIcon mode={value} />
         </div>
         <div className="min-w-0">
-          <div className="text-[9px] uppercase tracking-[0.3em] text-gray-500 font-bold leading-none mb-1">
+          <div className="text-[9px] uppercase tracking-[0.3em] font-bold leading-none mb-1" style={{ color: 'var(--text-muted)' }}>
             Mode
           </div>
-          <div className="font-bold text-sm text-white truncate leading-tight">
+          <div className="font-bold text-sm truncate leading-tight" style={{ color: 'var(--text-primary)' }}>
             {selected.label}
           </div>
         </div>
