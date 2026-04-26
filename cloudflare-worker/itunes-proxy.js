@@ -36,14 +36,19 @@ export default {
           body: 'grant_type=client_credentials',
         });
 
+        console.log('[Spotify] Token status:', tokenResp.status);
+
         if (!tokenResp.ok) {
-          return new Response(JSON.stringify({ error: 'Spotify auth failed — check SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET secrets' }), {
+          const tokenErr = await tokenResp.text();
+          console.log('[Spotify] Token error body:', tokenErr);
+          return new Response(JSON.stringify({ error: 'Spotify auth failed', details: tokenErr }), {
             status: 502,
             headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
           });
         }
 
         const { access_token } = await tokenResp.json();
+        console.log('[Spotify] Got token, fetching playlist:', playlistId);
 
         // 2. Fetch up to 100 tracks from the playlist
         const tracksResp = await fetch(
@@ -51,14 +56,19 @@ export default {
           { headers: { 'Authorization': `Bearer ${access_token}` } }
         );
 
+        console.log('[Spotify] Tracks status:', tracksResp.status);
+
         if (!tracksResp.ok) {
-          return new Response(JSON.stringify({ error: 'Playlist not found or is private' }), {
+          const tracksErr = await tracksResp.text();
+          console.log('[Spotify] Tracks error body:', tracksErr);
+          return new Response(JSON.stringify({ error: 'Playlist not found or is private', details: tracksErr, status: tracksResp.status }), {
             status: tracksResp.status,
             headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
           });
         }
 
         const data = await tracksResp.json();
+        console.log('[Spotify] Success, items count:', data?.items?.length);
         return new Response(JSON.stringify(data), {
           headers: {
             'Access-Control-Allow-Origin': '*',
