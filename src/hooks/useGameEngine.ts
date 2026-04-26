@@ -209,8 +209,10 @@ export function useGameEngine(): GameState & GameActions {
       (normalise(song.title) === normalise(currentSong.title) &&
         normalise(song.artist) === normalise(currentSong.artist));
 
+    const isCorrectArtist = normalise(song.artist) === normalise(currentSong.artist);
+
     const entry: GuessEntry = {
-      status: isCorrect ? 'correct' : 'wrong',
+      status: isCorrect ? 'correct' : (isCorrectArtist ? 'correct-artist' : 'wrong'),
       songTitle: song.title,
       songArtist: song.artist,
     };

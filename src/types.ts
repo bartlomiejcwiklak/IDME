@@ -19,7 +19,7 @@ export interface Song {
   releaseDate?: string;
 }
 
-export type GuessStatus = 'empty' | 'skipped' | 'wrong' | 'correct';
+export type GuessStatus = 'empty' | 'skipped' | 'wrong' | 'correct' | 'correct-artist';
 
 export interface GuessEntry {
   status: GuessStatus;

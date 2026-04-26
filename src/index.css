@@ -141,6 +141,14 @@
     box-shadow: 0 0 0 1px #d9ff42 inset;
   }
 
+  .guess-slot-correct-artist {
+    @apply guess-slot animate-bounce-in;
+    background: #110d00;
+    border-color: #fbbf24;
+    color: #fbbf24;
+    box-shadow: 0 0 0 1px #fbbf24 inset;
+  }
+
   /* ── Input ────────────────────────────────────────────── */
   .brutal-input {
     background: #000;
