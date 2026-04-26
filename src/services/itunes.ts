@@ -28,7 +28,12 @@ interface ItunesResponse {
 
 // Use the proxy when deployed; fall back to direct for local dev.
 // Set VITE_ITUNES_PROXY in your environment / GitHub Actions secret.
-const PROXY = (import.meta as any).env?.VITE_ITUNES_PROXY as string | undefined;
+// Normalise: ensure the value always starts with https:// so it's never
+// treated as a relative path (e.g. if the secret was set without the scheme).
+const _rawProxy = (import.meta as any).env?.VITE_ITUNES_PROXY as string | undefined;
+const PROXY = _rawProxy
+  ? (_rawProxy.startsWith('http') ? _rawProxy : `https://${_rawProxy}`)
+  : undefined;
 const BASE_SEARCH = PROXY ? `${PROXY}/search` : 'https://itunes.apple.com/search';
 const BASE_RSS    = PROXY ? `${PROXY}/rss`    : 'https://itunes.apple.com';
 
