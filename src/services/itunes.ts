@@ -56,7 +56,7 @@ export async function fetchTopCharts(
   limit = 50,
   country = 'us',
   genreId?: string,
-  type: 'topsongs' | 'newreleases' = 'topsongs'
+  type: 'topsongs' = 'topsongs'
 ): Promise<ItunesTrack[]> {
   const genreSegment = genreId ? `/genre=${genreId}` : '';
   const url = `https://itunes.apple.com/${country}/rss/${type}/limit=${limit}${genreSegment}/json`;

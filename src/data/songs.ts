@@ -114,8 +114,13 @@ function isGamingSong(song: Song): boolean {
   const genre = (song.genre ?? '').toLowerCase();
   const album = (song.album ?? '').toLowerCase();
 
-  // Reject common movie soundtrack keywords
-  if (album.includes('motion picture') || album.includes('movie soundtrack') || album.includes('from the film')) return false;
+  // Reject common movie soundtrack keywords and streaming series
+  if (
+    album.includes('motion picture') ||
+    album.includes('movie soundtrack') ||
+    album.includes('from the film') ||
+    album.includes('netflix')
+  ) return false;
 
   // Stricter gaming indicators
   const isVideoGame =
@@ -170,9 +175,25 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
     let pool: Song[] = [];
 
     if (isCharts) {
-      // "Chart Toppers" category: Strictly use the RSS Top 200 feed (Trending)
-      const tracks = await fetchTopCharts(200, modeConfig.country);
-      pool = tracks.map(itunesToSong);
+      // "Chart Toppers" category: Apple RSS only reliably serves 'topsongs' (max 100).
+      // Supplement with search queries for variety and to pad the pool.
+      const chartsQueries = modeConfig.region === 'polish'
+        ? ['polskie przeboje', 'polska muzyka 2024']
+        : ['top hits 2024', 'popular music'];
+
+      const [rssResults, ...searchResults] = await Promise.all([
+        fetchTopCharts(100, modeConfig.country, undefined, 'topsongs'),
+        ...chartsQueries.map(q => searchItunes(q, 100, modeConfig.country)),
+      ]);
+
+      const seenChartsIds = new Set<string>();
+      [...rssResults, ...searchResults.flat()].forEach(t => {
+        const id = String(t.trackId);
+        if (!seenChartsIds.has(id)) {
+          pool.push(itunesToSong(t));
+          seenChartsIds.add(id);
+        }
+      });
     } else {
       // General/Hip-Hop categories: Use search for broader, "evergreen" popular variety
       // We search for multiple broad terms to get a massive pool of ~400+ songs
