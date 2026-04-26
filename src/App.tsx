@@ -84,7 +84,7 @@ function Game({
   volume: number;
   onVolumeChange: (v: number) => void;
 }) {
-  const game = useGameEngine(songs);
+  const game = useGameEngine();
 
   // Sync global volume to the engine
   useEffect(() => {

@@ -25,7 +25,7 @@ export interface GameActions {
   setVolume: (volume: number) => void;
 }
 
-export function useGameEngine(songPool: Song[]): GameState & GameActions {
+export function useGameEngine(): GameState & GameActions {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const unlockedDurationRef = useRef<number>(UNLOCK_STAGES[0]);
 
