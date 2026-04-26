@@ -18,6 +18,7 @@ import SettingsModal from './components/SettingsModal';
 import ModeSelector from './components/ModeSelector';
 import ModeMenu from './components/ModeMenu';
 import FlagIcon from './components/FlagIcon';
+import Confetti from './components/Confetti';
 
 // ── Loading screen ────────────────────────────────────────────────────────────
 function LoadingScreen({ mode }: { mode: GameMode }) {
@@ -425,6 +426,8 @@ function Game({
       >
         IDME · {modeMeta.label} · Previews via iTunes
       </footer>
+
+      {game.gameStatus === 'won' && <Confetti />}
 
       {gameOver && (
         <EndGameModal
