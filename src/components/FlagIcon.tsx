@@ -1,6 +1,5 @@
 import type { GameMode } from '../types';
 import { getGameModeMeta } from '../data/modes';
-import GamepadIcon from './GamepadIcon';
 
 interface FlagIconProps {
   mode: GameMode;
