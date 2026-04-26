@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useSongPool } from './hooks/useSongPool';
 import { MAX_GUESSES, isBiasedArtist, isCuratedGamingAlbum } from './data/songs';
@@ -79,7 +79,7 @@ function Game({
   songs: Song[];
   mode: GameMode;
   initialState: CategoryState;
-  onStateChange: (state: CategoryState) => void;
+  onStateChange: (state: Partial<CategoryState>) => void;
   onModeChange: (m: GameMode) => void;
   onPlayNext: () => void;
   volume: number;
@@ -326,7 +326,6 @@ function Game({
                   onSubmit={handleSubmit}
                   disabled={gameOver}
                   searchCountry={searchCountry}
-                  placeholder="Search any song or artist…"
                   resetKey={mode}
                 />
               </div>
