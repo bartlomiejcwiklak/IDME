@@ -50,9 +50,9 @@ export default {
         const { access_token } = await tokenResp.json();
         console.log('[Spotify] Got token, fetching playlist:', playlistId);
 
-        // 2. Fetch up to 100 tracks from the playlist
+        // 2. Fetch playlist (includes tracks.items for first 100 tracks)
         const tracksResp = await fetch(
-          `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100&fields=items(track(name,artists(name)))`,
+          `https://api.spotify.com/v1/playlists/${playlistId}`,
           { headers: { 'Authorization': `Bearer ${access_token}` } }
         );
 
