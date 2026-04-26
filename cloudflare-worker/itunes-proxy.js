@@ -1,5 +1,5 @@
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     const url = new URL(request.url);
 
     // ── CORS preflight ────────────────────────────────────────────────────────
@@ -14,7 +14,8 @@ export default {
     }
 
     // ── Spotify playlist scraper ──────────────────────────────────────────────
-    // GET /spotify/:playlistId  →  returns the embed page's initial-state JSON
+    // GET /spotify/:playlistId  →  returns JSON with tracks array
+    // Requires SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET Worker secrets.
     if (url.pathname.startsWith('/spotify/')) {
       const playlistId = url.pathname.split('/')[2];
       if (!playlistId) {
@@ -25,35 +26,40 @@ export default {
       }
 
       try {
-        const embedUrl = `https://open.spotify.com/embed/playlist/${playlistId}`;
-        const resp = await fetch(embedUrl, {
+        // 1. Get access token via Client Credentials flow (no user login needed)
+        const tokenResp = await fetch('https://accounts.spotify.com/api/token', {
+          method: 'POST',
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml',
-            'Accept-Language': 'en-US,en;q=0.9',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Basic ' + btoa(`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`),
           },
+          body: 'grant_type=client_credentials',
         });
 
-        const html = await resp.text();
-
-        // Spotify embeds ship the full track list in a base64-encoded JSON blob
-        const match = html.match(/<script id="initial-state" type="text\/plain">([^<]+)<\/script>/);
-
-        if (!match) {
-          return new Response(
-            JSON.stringify({ error: 'Could not find track data in embed page' }),
-            { status: 502, headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' } }
-          );
+        if (!tokenResp.ok) {
+          return new Response(JSON.stringify({ error: 'Spotify auth failed — check SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET secrets' }), {
+            status: 502,
+            headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+          });
         }
 
-        // Decode base64 → UTF-8 JSON
-        const jsonStr = decodeURIComponent(
-          Array.from(atob(match[1]))
-            .map((c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
-            .join('')
+        const { access_token } = await tokenResp.json();
+
+        // 2. Fetch up to 100 tracks from the playlist
+        const tracksResp = await fetch(
+          `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100&fields=items(track(name,artists(name)))`,
+          { headers: { 'Authorization': `Bearer ${access_token}` } }
         );
 
-        return new Response(jsonStr, {
+        if (!tracksResp.ok) {
+          return new Response(JSON.stringify({ error: 'Playlist not found or is private' }), {
+            status: tracksResp.status,
+            headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+          });
+        }
+
+        const data = await tracksResp.json();
+        return new Response(JSON.stringify(data), {
           headers: {
             'Access-Control-Allow-Origin': '*',
             'Content-Type': 'application/json',
