@@ -68,7 +68,9 @@ export default {
         }
 
         const data = await tracksResp.json();
-        console.log('[Spotify] Success, items count:', data?.items?.length);
+        const trackItems = data?.tracks?.items;
+        console.log('[Spotify] Success, tracks count:', trackItems?.length);
+        console.log('[Spotify] Sample track:', JSON.stringify(trackItems?.[0]?.track));
         return new Response(JSON.stringify(data), {
           headers: {
             'Access-Control-Allow-Origin': '*',
