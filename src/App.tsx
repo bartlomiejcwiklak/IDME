@@ -248,34 +248,61 @@ function Game({
                   isPlaying={game.isPlaying}
                 />
 
-                <button
-                  id="play-pause-btn"
-                  onClick={game.isPlaying ? game.pause : game.play}
-                  aria-label={game.isPlaying ? 'Pause' : 'Play'}
-                  className="w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-200 active:scale-95"
-                  style={{
-                    background: '#d9ff42',
-                    color: '#000000',
-                    boxShadow: '0 0 20px rgba(217,255,66,0.28)',
-                  }}
-                >
-                  {game.isPlaying ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                      <rect x="6" y="4" width="4" height="16" rx="1" />
-                      <rect x="14" y="4" width="4" height="16" rx="1" />
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                      <polygon points="5 3 19 12 5 21 5 3" />
-                    </svg>
-                  )}
-                </button>
+                {game.audioError ? (
+                  <div className="flex flex-col items-center gap-3 py-2">
+                    <div className="text-xs text-red-400 font-medium flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {game.audioError}
+                    </div>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={game.retryLoad}
+                        className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-[10px] font-bold uppercase tracking-wider transition-colors"
+                      >
+                        Retry
+                      </button>
+                      <button 
+                        onClick={handleSkip}
+                        className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-[10px] font-bold uppercase tracking-wider transition-colors"
+                      >
+                        Skip Song
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      id="play-pause-btn"
+                      onClick={game.isPlaying ? game.pause : game.play}
+                      aria-label={game.isPlaying ? 'Pause' : 'Play'}
+                      className="w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-200 active:scale-95"
+                      style={{
+                        background: '#d9ff42',
+                        color: '#000000',
+                        boxShadow: '0 0 20px rgba(217,255,66,0.28)',
+                      }}
+                    >
+                      {game.isPlaying ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                          <rect x="6" y="4" width="4" height="16" rx="1" />
+                          <rect x="14" y="4" width="4" height="16" rx="1" />
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                          <polygon points="5 3 19 12 5 21 5 3" />
+                        </svg>
+                      )}
+                    </button>
 
-                <p className="text-xs text-gray-600 -mt-1">
-                  {game.isPlaying
-                    ? `${game.currentTime.toFixed(1)}s / ${game.unlockedDuration}s`
-                    : `${game.unlockedDuration}s unlocked`}
-                </p>
+                    <p className="text-xs text-gray-600 -mt-1">
+                      {game.isPlaying
+                        ? `${game.currentTime.toFixed(1)}s / ${game.unlockedDuration}s`
+                        : `${game.unlockedDuration}s unlocked`}
+                    </p>
+                  </>
+                )}
               </div>
 
               <GuessHistory guesses={game.guesses} />
@@ -334,7 +361,10 @@ function Game({
         </div>
       </div>
 
-      <footer className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-black/85 px-4 py-3 text-center text-[10px] text-gray-700 backdrop-blur-sm">
+      <footer
+        className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-black/85 px-4 pt-3 text-center text-[10px] text-gray-700 backdrop-blur-sm"
+        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+      >
         IDME · {modeMeta.label} · Previews via iTunes
       </footer>
 
