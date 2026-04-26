@@ -399,7 +399,17 @@ export default function App() {
       
       // 40% chance to pick from biased artists if any are available
       if (biasEligible.length > 0 && Math.random() < 0.4) {
-        newSong = biasEligible[Math.floor(Math.random() * biasEligible.length)];
+        // GROUP BY ARTIST to avoid "song count bias" (where artists with more songs are picked more often)
+        const byArtist: Record<string, Song[]> = {};
+        biasEligible.forEach(s => {
+          if (!byArtist[s.artist]) byArtist[s.artist] = [];
+          byArtist[s.artist].push(s);
+        });
+        
+        const artists = Object.keys(byArtist);
+        const randomArtist = artists[Math.floor(Math.random() * artists.length)];
+        const artistSongs = byArtist[randomArtist];
+        newSong = artistSongs[Math.floor(Math.random() * artistSongs.length)];
       } else {
         newSong = eligible[Math.floor(Math.random() * eligible.length)];
       }

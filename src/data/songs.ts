@@ -24,14 +24,21 @@ export const UNLOCK_STAGES: number[] = [0.1, 0.5, 2, 4, 8, 16];
 export const MAX_GUESSES = 6;
 
 /** Artists that should appear more frequently (40% of games) */
-export const BIASED_ARTISTS = [
-  'Taco Hemingway', 'Mata', 'Bedoes', 'Kizo', 'White 2115', 'Oki', 'Szpaku',
+export const POLISH_VIP = [
+  'Taco Hemingway', 'Mata', 'Bedoes', 'Kizo', 'White 2115', 'Oki', 'Szpaku', 
+  'Gibbs', 'Smolasty', 'Sobel', 'Quebonafide', 'Malik Montana', 'Young Leosia',
+  'PRO8L3M', 'Pezet', 'Sokół', 'Avi', 'Guzior', 'Kukon', 'Miszel', 'Zdechły Osa'
+];
+
+export const GLOBAL_VIP = [
   'Drake', 'Kanye West', 'Travis Scott', 'Kendrick Lamar', 'The Weeknd',
   'Future', 'Metro Boomin', 'Gunna', 'Playboi Carti', 'Central Cee', 'Tyler, The Creator',
   'A$AP Rocky', 'J. Cole', '21 Savage', 'Lil Uzi Vert', 'Nicki Minaj',
   'Cardi B', 'Megan Thee Stallion', 'Doja Cat', 'Rihanna', 'Beyoncé',
   'Post Malone', 'Juice WRLD', 'XXXTENTACION', 'Sfera Ebbasta', 'Pop Smoke', 'Ice Spice'
 ];
+
+export const BIASED_ARTISTS = [...POLISH_VIP, ...GLOBAL_VIP];
 
 export function isBiasedArtist(artistName: string): boolean {
   const lower = artistName.toLowerCase();
@@ -168,7 +175,8 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
     // BIAS INJECTION: Ensure biased artists are always present
     const biasedInPool = pool.filter(s => isBiasedArtist(s.artist));
     if (modeConfig.theme !== 'gaming' && biasedInPool.length < 20) {
-      const shuffleBias = [...BIASED_ARTISTS].sort(() => Math.random() - 0.5);
+      const sourceList = modeConfig.region === 'polish' ? POLISH_VIP : GLOBAL_VIP;
+      const shuffleBias = [...sourceList].sort(() => Math.random() - 0.5);
       const targets = shuffleBias.slice(0, 8); // Inject 8 random VIPs
       
       for (const artist of targets) {
