@@ -52,23 +52,23 @@ export function useGameEngine(): GameState & GameActions {
 
     const syncTime = () => {
       if (!audioRef.current) return;
-      
+
       const audioTime = audioRef.current.currentTime;
       const now = performance.now();
-      
+
       // If the audio clock has advanced, reset our high-res interpolation anchor
       if (audioTime !== lastAudioTime) {
         lastAudioTime = audioTime;
         lastSyncTime = now;
       }
-      
+
       // Calculate how many seconds have passed since the last audio clock update
       const dt = (now - lastSyncTime) / 1000;
-      
+
       // Estimate the "real" current time. We clamp it to 0.3s ahead of the 
       // actual audio clock to prevent drifting too far if the audio stalls.
       const estimatedTime = Math.min(audioTime + dt, audioTime + 0.3);
-      
+
       setCurrentTime(estimatedTime);
 
       // Hard stop at the unlocked boundary
@@ -94,13 +94,13 @@ export function useGameEngine(): GameState & GameActions {
       cancelAnimationFrame(rafId);
     };
 
-    const onEnded = () => { 
-      setIsPlaying(false); 
+    const onEnded = () => {
+      setIsPlaying(false);
       setCurrentTime(0);
       cancelAnimationFrame(rafId);
     };
-    
-    const onError = () => { 
+
+    const onError = () => {
       setIsPlaying(false);
       cancelAnimationFrame(rafId);
     };
@@ -165,7 +165,7 @@ export function useGameEngine(): GameState & GameActions {
     if (audio.currentTime >= unlockedDurationRef.current) {
       audio.currentTime = 0;
     }
-    audio.play().catch(() => {/* blocked by autoplay policy */});
+    audio.play().catch(() => {/* blocked by autoplay policy */ });
   }, []);
 
   const pause = useCallback(() => {
@@ -199,6 +199,14 @@ export function useGameEngine(): GameState & GameActions {
     });
   }, []);
 
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+  const normalise = (s: string) => (s || '').toLowerCase().trim();
+
+  const getMainArtist = (artist: string) => {
+    // Split by common feature separators and take the first part
+    return normalise(artist.split(/ feat\. | ft\. | & | , | with /i)[0]);
+  };
+
   // ── Submit ────────────────────────────────────────────────────────────────────
   const submitGuess = useCallback((song: Song) => {
     if (gameStatus !== 'playing') return;
@@ -207,9 +215,9 @@ export function useGameEngine(): GameState & GameActions {
     const isCorrect =
       song.id === currentSong.id ||
       (normalise(song.title) === normalise(currentSong.title) &&
-        normalise(song.artist) === normalise(currentSong.artist));
+        getMainArtist(song.artist) === getMainArtist(currentSong.artist));
 
-    const isCorrectArtist = normalise(song.artist) === normalise(currentSong.artist);
+    const isCorrectArtist = getMainArtist(song.artist) === getMainArtist(currentSong.artist);
 
     const entry: GuessEntry = {
       status: isCorrect ? 'correct' : (isCorrectArtist ? 'correct-artist' : 'wrong'),
@@ -257,7 +265,7 @@ export function useGameEngine(): GameState & GameActions {
     setGuesses(state.guesses);
     setCurrentAttempt(state.guesses.length);
     setGameStatus(state.gameStatus);
-    
+
     // Recalculate duration based on attempts
     const attempt = state.guesses.length;
     const dur = attempt < MAX_GUESSES ? UNLOCK_STAGES[attempt] : UNLOCK_STAGES[UNLOCK_STAGES.length - 1];
