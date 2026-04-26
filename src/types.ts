@@ -94,5 +94,7 @@ export interface SettingsModalProps {
   onVolumeChange: (volume: number) => void;
   soundsEnabled: boolean;
   onSoundsToggle: (enabled: boolean) => void;
+  theme: 'dark' | 'light';
+  onThemeToggle: (theme: 'dark' | 'light') => void;
   onClose: () => void;
 }

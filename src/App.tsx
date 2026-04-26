@@ -7,6 +7,7 @@ import type { Song, GameMode, CategoryState } from './types';
 import { soundService } from './services/sounds';
 
 import logo from './logo.png';
+import logoBlack from './logo_black.png';
 
 import Header from './components/Header';
 import AudioProgressBar from './components/AudioProgressBar';
@@ -141,6 +142,8 @@ function Game({
   onVolumeChange: (v: number) => void;
   soundsEnabled: boolean;
   onSoundsToggle: (enabled: boolean) => void;
+  theme: 'dark' | 'light';
+  onThemeToggle: (t: 'dark' | 'light') => void;
 }) {
   const game = useGameEngine();
 
@@ -222,7 +225,7 @@ function Game({
     <div className="min-h-screen flex flex-col items-center">
       <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-0">
         <Header
-          logoSrc={logo}
+          logoSrc={theme === 'light' ? logoBlack : logo}
           onHelpOpen={() => setShowHelp(true)}
           onSettingsOpen={() => setShowSettings(true)}
         />
@@ -427,8 +430,6 @@ function Game({
         IDME · {modeMeta.label} · Previews via iTunes
       </footer>
 
-      {game.gameStatus === 'won' && <Confetti />}
-
       {gameOver && (
         <EndGameModal
           gameStatus={game.gameStatus}
@@ -456,6 +457,8 @@ function Game({
           onVolumeChange={onVolumeChange}
           soundsEnabled={soundsEnabled}
           onSoundsToggle={onSoundsToggle}
+          theme={theme}
+          onThemeToggle={onThemeToggle}
           onClose={() => setShowSettings(false)}
         />
       )}
@@ -545,6 +548,20 @@ export default function App() {
     localStorage.setItem('idme-sounds-enabled', soundsEnabled.toString());
     soundService.setEnabled(soundsEnabled);
   }, [soundsEnabled]);
+
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('idme-theme');
+    return (saved as 'dark' | 'light') || 'dark';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('idme-theme', theme);
+    if (theme === 'light') {
+      document.body.classList.add('light-mode');
+    } else {
+      document.body.classList.remove('light-mode');
+    }
+  }, [theme]);
 
   const handleStateChange = useCallback((state: Partial<CategoryState>) => {
     setCategoryStates((prev) => {
@@ -690,6 +707,8 @@ export default function App() {
             onVolumeChange={setVolume}
             soundsEnabled={soundsEnabled}
             onSoundsToggle={setSoundsEnabled}
+            theme={theme}
+            onThemeToggle={setTheme}
           />
         )}
       </div>

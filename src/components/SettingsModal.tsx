@@ -5,6 +5,8 @@ export default function SettingsModal({
   onVolumeChange, 
   soundsEnabled,
   onSoundsToggle,
+  theme,
+  onThemeToggle,
   onClose 
 }: SettingsModalProps) {
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,7 +20,7 @@ export default function SettingsModal({
       aria-label="Settings"
       className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
     >
-      <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative w-full sm:max-w-md glass-dark rounded-t-3xl sm:rounded-2xl p-6 pb-8 sm:pb-6 shadow-2xl shadow-black/80 animate-slide-up">
         <div className="sm:hidden w-10 h-1 rounded-full bg-white/20 mx-auto mb-5" />
@@ -34,6 +36,31 @@ export default function SettingsModal({
         </div>
 
         <div className="space-y-4">
+          {/* Theme Toggle */}
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 transition-colors">
+            <div>
+              <div className="text-sm font-bold">Appearance</div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">
+                {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+              </div>
+            </div>
+            <button
+              onClick={() => onThemeToggle(theme === 'dark' ? 'light' : 'dark')}
+              className="flex items-center gap-1 p-1 bg-white/5 rounded-full border border-white/10"
+            >
+              <div className={`p-1.5 rounded-full transition-all ${theme === 'light' ? 'bg-white text-black' : 'text-gray-500'}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                </svg>
+              </div>
+              <div className={`p-1.5 rounded-full transition-all ${theme === 'dark' ? 'bg-acid text-black' : 'text-gray-500'}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              </div>
+            </button>
+          </div>
+
           {/* Master Volume Control */}
           <div className="p-4 rounded-2xl bg-white/5 border border-white/5 transition-colors space-y-4">
             <div className="flex items-center justify-between">

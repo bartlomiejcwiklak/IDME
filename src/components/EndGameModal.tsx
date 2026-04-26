@@ -1,5 +1,6 @@
 import type { EndGameModalProps } from '../types';
 import { MAX_GUESSES } from '../data/songs';
+import Confetti from './Confetti';
 
 export default function EndGameModal({ 
   gameStatus, 
@@ -31,6 +32,8 @@ export default function EndGameModal({
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" />
+
+      {won && <Confetti />}
 
       {/* Sheet */}
       <div className="relative w-full sm:max-w-md glass-dark rounded-t-3xl sm:rounded-2xl p-6 pb-8 sm:pb-6 shadow-2xl shadow-black/80 animate-slide-up">

@@ -117,7 +117,7 @@ export default function Confetti() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-[40]"
+      className="fixed inset-0 pointer-events-none z-[10]"
       style={{ width: '100vw', height: '100vh' }}
     />
   );
