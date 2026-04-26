@@ -9,7 +9,7 @@ export default function HelpModal({ onClose }: HelpModalProps) {
       aria-label="How to play"
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
     >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative w-full sm:max-w-md glass-dark rounded-t-3xl sm:rounded-2xl p-6 pb-8 sm:pb-6 shadow-2xl shadow-black/80 animate-slide-up">
         <div className="sm:hidden w-10 h-1 rounded-full bg-white/20 mx-auto mb-5" />
@@ -35,7 +35,7 @@ export default function HelpModal({ onClose }: HelpModalProps) {
           </li>
           <li className="flex gap-3">
             <span className="w-6 h-6 rounded-full bg-brand-600/30 text-brand-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
-            <span>Each wrong guess or <strong className="text-white">Skip</strong> unlocks a longer clip: {UNLOCK_STAGES.join('s → ')}s.</span>
+            <span>Each wrong guess or <strong className="text-white">Skip</strong> unlocks a longer clip: {UNLOCK_STAGES.map(s => s + 's').join(' → ')}.</span>
           </li>
           <li className="flex gap-3">
             <span className="w-6 h-6 rounded-full bg-brand-600/30 text-brand-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">4</span>
@@ -47,7 +47,8 @@ export default function HelpModal({ onClose }: HelpModalProps) {
         <div className="mt-5 p-4 rounded-xl bg-white/[0.04] border border-white/[0.06] space-y-2">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Result Key</p>
           {[
-            { color: 'bg-brand-500', label: 'Correct guess' },
+            { color: 'bg-[#d9ff42]', label: 'Correct song' },
+            { color: 'bg-amber-500', label: 'Correct artist' },
             { color: 'bg-red-600',   label: 'Wrong guess' },
             { color: 'bg-gray-600',  label: 'Skipped turn' },
           ].map(({ color, label }) => (
@@ -58,7 +59,11 @@ export default function HelpModal({ onClose }: HelpModalProps) {
           ))}
         </div>
 
-        <button onClick={onClose} className="btn-primary w-full mt-5">
+        <div className="mt-6 text-center">
+          <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em]">made by @ohhbaro</p>
+        </div>
+
+        <button onClick={onClose} className="btn-primary w-full mt-4">
           Got it — Let's Play!
         </button>
       </div>

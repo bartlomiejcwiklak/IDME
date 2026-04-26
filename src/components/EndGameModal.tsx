@@ -9,6 +9,7 @@ export default function EndGameModal({ gameStatus, correctSong, guesses, onPlayN
   // Build share emoji string
   const emojiRow = guesses.map((g) => {
     if (g.status === 'correct') return '🟢';
+    if (g.status === 'correct-artist') return '🟡';
     if (g.status === 'wrong')   return '🔴';
     if (g.status === 'skipped') return '⬜';
     return '';
