@@ -3,10 +3,10 @@
 export type GameMode =
   | 'global-all'
   | 'global-hiphop'
-  | 'global-latest'
+  | 'global-charts'
   | 'polish-all'
   | 'polish-hiphop'
-  | 'polish-latest';
+  | 'polish-charts';
 
 export interface Song {
   id: string;
@@ -16,6 +16,7 @@ export interface Song {
   audioUrl: string;
   artworkUrl?: string;
   genre?: string;
+  releaseDate?: string;
 }
 
 export type GuessStatus = 'empty' | 'skipped' | 'wrong' | 'correct';
@@ -27,6 +28,14 @@ export interface GuessEntry {
 }
 
 export type GameStatus = 'playing' | 'won' | 'lost';
+
+export interface CategoryState {
+  currentSong: Song | null;
+  guesses: GuessEntry[];
+  gameStatus: GameStatus;
+  playedIds: string[];
+}
+
 
 // ─── Component Props ──────────────────────────────────────────────────────────
 

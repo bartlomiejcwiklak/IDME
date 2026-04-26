@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { GAME_MODE_OPTIONS, getGameModeMeta } from '../data/modes';
 import type { GameMode } from '../types';
+import FlagIcon from './FlagIcon';
 
 interface CategoryDropdownProps {
   value: GameMode;
@@ -30,12 +31,12 @@ export default function CategoryDropdown({ value, onChange }: CategoryDropdownPr
         onClick={() => setOpen((state) => !state)}
         aria-expanded={open}
         aria-label="Choose song category"
-        className="w-full flex items-center justify-between gap-4 border-2 border-acid bg-black px-4 py-3 text-left shadow-[4px_4px_0_#d9ff42] transition-transform duration-150 hover:-translate-y-px active:translate-x-[2px] active:translate-y-[2px]"
+        className="w-full h-[82px] flex items-center justify-between gap-4 border-2 border-acid bg-black px-4 py-3 text-left shadow-[4px_4px_0_#d9ff42] transition-transform duration-150 hover:-translate-y-px active:translate-x-[2px] active:translate-y-[2px]"
       >
         <div className="min-w-0">
           <div className="text-[10px] uppercase tracking-[0.35em] text-gray-500 font-bold">Song Pool</div>
           <div className="mt-1 flex items-center gap-2 min-w-0">
-            <span className="text-lg leading-none flex-shrink-0">{selected.flag}</span>
+            <FlagIcon mode={value} />
             <span className="truncate font-bold text-sm sm:text-base text-white">{selected.label}</span>
           </div>
           <div className="mt-1 text-[11px] text-gray-500 truncate">{selected.description}</div>
@@ -68,7 +69,7 @@ export default function CategoryDropdown({ value, onChange }: CategoryDropdownPr
                   active ? 'bg-acid text-black' : 'text-gray-200 hover:bg-white/5'
                 }`}
               >
-                <span className="text-lg leading-none flex-shrink-0">{option.flag}</span>
+                <FlagIcon mode={option.value} />
                 <span className="min-w-0">
                   <span className="block text-sm font-bold leading-tight">{option.label}</span>
                   <span className={`block text-[11px] leading-tight ${active ? 'text-black/75' : 'text-gray-500'}`}>

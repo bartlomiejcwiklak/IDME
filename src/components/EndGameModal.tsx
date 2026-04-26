@@ -22,7 +22,7 @@ export default function EndGameModal({ gameStatus, correctSong, guesses, onPlayN
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" />
 
       {/* Sheet */}
       <div className="relative w-full sm:max-w-md glass-dark rounded-t-3xl sm:rounded-2xl p-6 pb-8 sm:pb-6 shadow-2xl shadow-black/80 animate-slide-up">
@@ -71,12 +71,19 @@ export default function EndGameModal({ gameStatus, correctSong, guesses, onPlayN
               🎵
             </div>
           )}
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="font-bold text-base truncate">{correctSong.title}</div>
             <div className="text-sm text-gray-400 truncate">{correctSong.artist}</div>
-            {correctSong.album && (
-              <div className="text-xs text-gray-600 truncate mt-0.5">{correctSong.album}</div>
-            )}
+            <div className="flex items-center justify-between gap-4 mt-0.5">
+              {correctSong.album && (
+                <div className="text-[10px] text-gray-600 truncate">{correctSong.album}</div>
+              )}
+              {correctSong.releaseDate && (
+                <div className="text-[10px] text-gray-600 flex-shrink-0 ml-auto tabular-nums">
+                  {new Date(correctSong.releaseDate).getFullYear()}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

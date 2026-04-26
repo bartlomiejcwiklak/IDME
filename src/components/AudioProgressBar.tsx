@@ -23,17 +23,17 @@ export default function AudioProgressBar({
 
         {/* Played (progress head) */}
         <div
-          className={`absolute inset-y-0 left-0 rounded-full bg-acid transition-none ${
-            isPlaying ? 'shadow-[0_0_8px_rgba(217,255,66,0.6)]' : ''
+          className={`absolute inset-y-0 left-0 rounded-full bg-acid ${
+            isPlaying ? 'shadow-[0_0_12px_rgba(217,255,66,0.7)]' : ''
           }`}
-          style={{ width: `${playedPct}%` }}
+          style={{ width: `${playedPct}%`, transition: 'none' }}
         />
 
         {/* Glowing tip when playing */}
         {isPlaying && playedPct > 0 && (
           <div
-            className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-acid shadow-[0_0_10px_rgba(217,255,66,0.9)] transition-none"
-            style={{ left: `calc(${playedPct}% - 7px)` }}
+            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-acid shadow-[0_0_15px_rgba(217,255,66,1)]"
+            style={{ left: `calc(${playedPct}% - 8px)`, transition: 'none' }}
           />
         )}
 

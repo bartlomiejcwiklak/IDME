@@ -1,9 +1,9 @@
-import { useState, type ChangeEvent, useEffect } from 'react';
+import { useState, type ChangeEvent, useEffect, useCallback } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useSongPool } from './hooks/useSongPool';
-import { MAX_GUESSES } from './data/songs';
+import { MAX_GUESSES, isBiasedArtist } from './data/songs';
 import { getGameModeMeta } from './data/modes';
-import type { Song, GameMode } from './types';
+import type { Song, GameMode, CategoryState } from './types';
 
 import logo from './logo.png';
 
@@ -14,6 +14,7 @@ import SearchBar from './components/SearchBar';
 import EndGameModal from './components/EndGameModal';
 import HelpModal from './components/HelpModal';
 import CategoryDropdown from './components/CategoryDropdown';
+import FlagIcon from './components/FlagIcon';
 
 // ── Loading screen ────────────────────────────────────────────────────────────
 function LoadingScreen({ mode }: { mode: GameMode }) {
@@ -65,21 +66,68 @@ function ErrorScreen({ message, onRetry }: { message: string; onRetry: () => voi
 
 // ── Game ──────────────────────────────────────────────────────────────────────
 function Game({
+  songs,
   mode,
+  initialState,
+  onStateChange,
   onModeChange,
-  game,
   onPlayNext,
+  volume,
+  onVolumeChange,
 }: {
   songs: Song[];
   mode: GameMode;
+  initialState: CategoryState;
+  onStateChange: (state: CategoryState) => void;
   onModeChange: (m: GameMode) => void;
-  game: ReturnType<typeof useGameEngine>;
   onPlayNext: () => void;
+  volume: number;
+  onVolumeChange: (v: number) => void;
 }) {
+  const game = useGameEngine(songs);
+
+  // Sync global volume to the engine
+  useEffect(() => {
+    game.setVolume(volume);
+  }, [volume, game]);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showHelp, setShowHelp] = useState(false);
-  const modeMeta = getGameModeMeta(mode);
 
+  // ── Initialize or restore state ─────────────────────────────────────────────
+  useEffect(() => {
+    const seedIsInPool =
+      !!initialState.currentSong && songs.some((s) => s.id === initialState.currentSong?.id);
+
+    if (seedIsInPool && initialState.currentSong) {
+      game.loadState(initialState);
+    } else if (songs.length > 0) {
+      // Apply the same bias logic for the initial pick
+      const biasEligible = songs.filter(s => isBiasedArtist(s.artist));
+      let initialSong;
+      
+      if (biasEligible.length > 0 && Math.random() < 0.4) {
+        initialSong = biasEligible[Math.floor(Math.random() * biasEligible.length)];
+      } else {
+        initialSong = songs[Math.floor(Math.random() * songs.length)];
+      }
+      
+      game.reset(initialSong);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [songs.length]);
+
+  // ── Sync state back to App ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (!game.currentSong.id) return;
+    onStateChange({
+      currentSong: game.currentSong,
+      guesses: [...game.guesses],
+      gameStatus: game.gameStatus,
+      playedIds: initialState.playedIds || [],
+    });
+  }, [game.currentSong, game.guesses, game.gameStatus, onStateChange, initialState.playedIds]);
+
+  const modeMeta = getGameModeMeta(mode);
   const isPolish = modeMeta.country === 'pl';
   const searchCountry = modeMeta.country;
 
@@ -100,7 +148,7 @@ function Game({
   };
 
   const handleVolumeChange = (event: ChangeEvent<HTMLInputElement>) => {
-    game.setVolume(Number(event.target.value));
+    onVolumeChange(Number(event.target.value));
   };
 
   const attemptsLeft = MAX_GUESSES - game.currentAttempt;
@@ -122,7 +170,7 @@ function Game({
             <div className="w-full h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
 
             <div className="px-4 pb-1 lg:px-0">
-              <div className="min-h-[82px] flex items-start">
+              <div className="h-[82px] flex items-start">
                 <CategoryDropdown value={mode} onChange={onModeChange} />
               </div>
             </div>
@@ -154,10 +202,10 @@ function Game({
                       />
                     ) : (
                       <div
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0 ${game.isPlaying ? 'animate-pulse-glow' : ''}`}
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${game.isPlaying ? 'animate-pulse-glow' : ''}`}
                         style={{ background: isPolish ? 'rgba(220,38,38,0.12)' : 'rgba(34,197,94,0.12)' }}
                       >
-                        {isPolish ? '🇵🇱' : '🎵'}
+                        {isPolish ? <FlagIcon mode={mode} className="w-6 h-4" /> : <span className="text-xl">🎵</span>}
                       </div>
                     )}
                     <div>
@@ -230,24 +278,24 @@ function Game({
 
           {!gameOver && (
             <aside className="w-full">
-              <div className="lg:sticky lg:top-4 flex flex-col gap-2">
-                <div className="min-h-[82px] flex flex-col justify-start border-2 border-acid bg-black px-4 py-3 shadow-[4px_4px_0_#d9ff42]">
+              <div className="lg:sticky lg:top-4 flex flex-col gap-6">
+                <div className="h-[82px] flex flex-col justify-center border-2 border-acid bg-black px-4 py-3 shadow-[4px_4px_0_#d9ff42]">
                   <div className="flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.28em] text-gray-500">
                     <span>Master volume</span>
-                    <span className="text-acid font-semibold tracking-normal">{Math.round(game.volume * 100)}%</span>
+                    <span className="text-acid font-semibold tracking-normal">{Math.round(volume * 100)}%</span>
                   </div>
                   <input
                     type="range"
                     min="0"
                     max="1"
                     step="0.01"
-                    value={game.volume}
+                    value={volume}
                     onChange={handleVolumeChange}
                     aria-label="Master volume"
                     className="volume-slider mt-3 w-full"
                   />
                 </div>
-                <div className="lg:pt-[114px]">
+                <div>
                   <SearchBar
                     selectedSong={selectedSong}
                     onSelect={setSelectedSong}
@@ -286,35 +334,46 @@ function Game({
 export default function App() {
   const [mode, setMode] = useState<GameMode>('global-all');
   const pool = useSongPool(mode);
-  
-  // Store one song per category that persists across switches
-  const [categorySeeds, setCategorySeeds] = useState<Record<GameMode, Song | null>>({
-    'global-all': null,
-    'global-hiphop': null,
-    'global-latest': null,
-    'polish-all': null,
-    'polish-hiphop': null,
-    'polish-latest': null,
+
+  // Store full game state per category that persists across switches and refreshes
+  const [categoryStates, setCategoryStates] = useState<Record<GameMode, CategoryState>>(() => {
+    const saved = localStorage.getItem('idme-category-states');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.warn('Failed to parse saved category states:', e);
+      }
+    }
+    return {
+      'global-all': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
+      'global-hiphop': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
+      'global-charts': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
+      'polish-all': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
+      'polish-hiphop': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
+      'polish-charts': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
+    };
   });
 
-  const game = useGameEngine(pool.status === 'ready' ? pool.songs : []);
-
-  // When pool is ready, keep an existing valid seed or create a fresh one.
   useEffect(() => {
-    if (pool.status !== 'ready' || pool.songs.length === 0) return;
+    localStorage.setItem('idme-category-states', JSON.stringify(categoryStates));
+  }, [categoryStates]);
 
-    const currentSeed = categorySeeds[mode];
-    const seedIsInPool = !!currentSeed && pool.songs.some((song) => song.id === currentSeed.id);
+  const [volume, setVolume] = useState(() => {
+    const saved = localStorage.getItem('idme-volume');
+    return saved !== null ? parseFloat(saved) : 0.8;
+  });
 
-    if (seedIsInPool && currentSeed) {
-      game.setSong(currentSeed);
-      return;
-    }
+  useEffect(() => {
+    localStorage.setItem('idme-volume', volume.toString());
+  }, [volume]);
 
-    const randomSong = pool.songs[Math.floor(Math.random() * pool.songs.length)];
-    setCategorySeeds((prev) => ({ ...prev, [mode]: randomSong }));
-    game.setSong(randomSong);
-  }, [mode, pool.status, pool.songs, categorySeeds, game]);
+  const handleStateChange = useCallback((updatedState: CategoryState) => {
+    setCategoryStates((prev) => ({
+      ...prev,
+      [mode]: updatedState,
+    }));
+  }, [mode]);
 
   const handleModeChange = (newMode: GameMode) => {
     setMode(newMode);
@@ -322,22 +381,47 @@ export default function App() {
 
   const handlePlayNext = () => {
     if (pool.status === 'ready' && pool.songs.length > 0) {
-      // Pick a new random song for this category
-      const eligible = pool.songs.filter((s) => s.id !== game.currentSong.id);
-      const newSong = eligible.length > 0 
-        ? eligible[Math.floor(Math.random() * eligible.length)]
-        : pool.songs[Math.floor(Math.random() * pool.songs.length)];
+      const currentState = categoryStates[mode];
+      const played = currentState.playedIds || [];
       
-      setCategorySeeds((prev) => ({ ...prev, [mode]: newSong }));
-      game.nextSong(newSong);
+      // Update played IDs with the song we just finished
+      const updatedPlayed = currentState.currentSong 
+        ? Array.from(new Set([...played, currentState.currentSong.id]))
+        : played;
+
+      // Filter pool for unplayed songs
+      let eligible = pool.songs.filter((s) => !updatedPlayed.includes(s.id));
+      
+      // If we've played everything, reset the played list
+      if (eligible.length === 0) {
+        eligible = pool.songs;
+        // Start fresh played list with the next song
+      }
+
+      let newSong;
+      const biasEligible = eligible.filter(s => isBiasedArtist(s.artist));
+      
+      // 40% chance to pick from biased artists if any are available
+      if (biasEligible.length > 0 && Math.random() < 0.4) {
+        newSong = biasEligible[Math.floor(Math.random() * biasEligible.length)];
+      } else {
+        newSong = eligible[Math.floor(Math.random() * eligible.length)];
+      }
+
+      const newState: CategoryState = { 
+        currentSong: newSong, 
+        guesses: [], 
+        gameStatus: 'playing',
+        playedIds: updatedPlayed.length >= pool.songs.length ? [newSong.id] : updatedPlayed
+      };
+      
+      setCategoryStates((prev) => ({ ...prev, [mode]: newState }));
     }
   };
 
-  // Always render the header area even during loading
   return (
     <div className="min-h-screen flex flex-col items-center">
       <div className="w-full">
-
         {pool.status === 'loading' && <LoadingScreen mode={mode} />}
 
         {pool.status === 'error' && (
@@ -348,12 +432,16 @@ export default function App() {
         )}
 
         {pool.status === 'ready' && (
-          <Game 
-            songs={pool.songs} 
-            mode={mode} 
+          <Game
+            key={mode + (categoryStates[mode].currentSong?.id || '')}
+            songs={pool.songs}
+            mode={mode}
+            initialState={categoryStates[mode]}
+            onStateChange={handleStateChange}
             onModeChange={handleModeChange}
-            game={game}
             onPlayNext={handlePlayNext}
+            volume={volume}
+            onVolumeChange={setVolume}
           />
         )}
       </div>

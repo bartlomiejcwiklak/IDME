@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { UNLOCK_STAGES, MAX_GUESSES } from '../data/songs';
-import type { Song, GuessEntry, GameStatus } from '../types';
+import type { Song, GuessEntry, GameStatus, CategoryState } from '../types';
 
 export interface GameState {
   currentSong: Song;
@@ -20,6 +20,8 @@ export interface GameActions {
   skip: () => void;
   nextSong: (song: Song) => void;
   setSong: (song: Song) => void;
+  loadState: (state: CategoryState) => void;
+  reset: (song: Song) => void;
   setVolume: (volume: number) => void;
 }
 
@@ -27,9 +29,7 @@ export function useGameEngine(songPool: Song[]): GameState & GameActions {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const unlockedDurationRef = useRef<number>(UNLOCK_STAGES[0]);
 
-  const [currentSong, setCurrentSong] = useState<Song>(() =>
-    songPool.length > 0 ? songPool[Math.floor(Math.random() * songPool.length)] : ({} as Song),
-  );
+  const [currentSong, setCurrentSong] = useState<Song>({} as Song);
   const [guesses, setGuesses] = useState<GuessEntry[]>([]);
   const [currentAttempt, setCurrentAttempt] = useState(0);
   const [unlockedDuration, setUnlockedDuration] = useState(UNLOCK_STAGES[0]);
@@ -37,14 +37,6 @@ export function useGameEngine(songPool: Song[]): GameState & GameActions {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolumeState] = useState(0.8);
-
-  // ── Pick initial song only on first render if no song selected yet ────────────
-  useEffect(() => {
-    if (songPool.length > 0 && !currentSong.id) {
-      const song = songPool[Math.floor(Math.random() * songPool.length)];
-      setCurrentSong(song);
-    }
-  }, [songPool.length, currentSong.id]);
 
   // ── Bootstrap audio element ───────────────────────────────────────────────────
   useEffect(() => {
@@ -54,11 +46,70 @@ export function useGameEngine(songPool: Song[]): GameState & GameActions {
     audio.volume = volume;
     audioRef.current = audio;
 
+    let rafId: number;
+    let lastAudioTime = 0;
+    let lastSyncTime = 0;
+
+    const syncTime = () => {
+      if (!audioRef.current) return;
+      
+      const audioTime = audioRef.current.currentTime;
+      const now = performance.now();
+      
+      // If the audio clock has advanced, reset our high-res interpolation anchor
+      if (audioTime !== lastAudioTime) {
+        lastAudioTime = audioTime;
+        lastSyncTime = now;
+      }
+      
+      // Calculate how many seconds have passed since the last audio clock update
+      const dt = (now - lastSyncTime) / 1000;
+      
+      // Estimate the "real" current time. We clamp it to 0.3s ahead of the 
+      // actual audio clock to prevent drifting too far if the audio stalls.
+      const estimatedTime = Math.min(audioTime + dt, audioTime + 0.3);
+      
+      setCurrentTime(estimatedTime);
+
+      // Hard stop at the unlocked boundary
+      if (audioTime >= unlockedDurationRef.current || estimatedTime >= unlockedDurationRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        setCurrentTime(0);
+        setIsPlaying(false);
+      } else if (!audioRef.current.paused) {
+        rafId = requestAnimationFrame(syncTime);
+      }
+    };
+
+    const onPlay = () => {
+      setIsPlaying(true);
+      lastAudioTime = audioRef.current?.currentTime || 0;
+      lastSyncTime = performance.now();
+      rafId = requestAnimationFrame(syncTime);
+    };
+
+    const onPause = () => {
+      setIsPlaying(false);
+      cancelAnimationFrame(rafId);
+    };
+
+    const onEnded = () => { 
+      setIsPlaying(false); 
+      setCurrentTime(0);
+      cancelAnimationFrame(rafId);
+    };
+    
+    const onError = () => { 
+      setIsPlaying(false);
+      cancelAnimationFrame(rafId);
+    };
+
     const onTimeUpdate = () => {
       if (!audioRef.current) return;
       const t = audioRef.current.currentTime;
-      setCurrentTime(t);
-      // Hard stop at the unlocked boundary
+      // timeupdate is our safety net for background/throttled state.
+      // It ensures we stop at the boundary even if RAF is suspended.
       if (t >= unlockedDurationRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -67,18 +118,20 @@ export function useGameEngine(songPool: Song[]): GameState & GameActions {
       }
     };
 
-    const onEnded = () => { setIsPlaying(false); setCurrentTime(0); };
-    const onError = () => { setIsPlaying(false); };
-
-    audio.addEventListener('timeupdate', onTimeUpdate);
+    audio.addEventListener('play', onPlay);
+    audio.addEventListener('pause', onPause);
     audio.addEventListener('ended', onEnded);
     audio.addEventListener('error', onError);
+    audio.addEventListener('timeupdate', onTimeUpdate);
 
     return () => {
       audio.pause();
-      audio.removeEventListener('timeupdate', onTimeUpdate);
+      cancelAnimationFrame(rafId);
+      audio.removeEventListener('play', onPlay);
+      audio.removeEventListener('pause', onPause);
       audio.removeEventListener('ended', onEnded);
       audio.removeEventListener('error', onError);
+      audio.removeEventListener('timeupdate', onTimeUpdate);
     };
   }, []);
 
@@ -113,12 +166,10 @@ export function useGameEngine(songPool: Song[]): GameState & GameActions {
       audio.currentTime = 0;
     }
     audio.play().catch(() => {/* blocked by autoplay policy */});
-    setIsPlaying(true);
   }, []);
 
   const pause = useCallback(() => {
     audioRef.current?.pause();
-    setIsPlaying(false);
   }, []);
 
   const setVolume = useCallback((nextVolume: number) => {
@@ -194,14 +245,43 @@ export function useGameEngine(songPool: Song[]): GameState & GameActions {
     setCurrentTime(0);
   }, []);
 
-  // ── Set song (for category switching) ──────────────────────────────────────────
   const setSong = useCallback((song: Song) => {
     setCurrentSong(song);
   }, []);
 
-  return {
+  // ── Load state (for restoring category progress) ─────────────────────────────
+  const loadState = useCallback((state: CategoryState) => {
+    if (state.currentSong) setCurrentSong(state.currentSong);
+    setGuesses(state.guesses);
+    setCurrentAttempt(state.guesses.length);
+    setGameStatus(state.gameStatus);
+    
+    // Recalculate duration based on attempts
+    const attempt = state.guesses.length;
+    const dur = attempt < MAX_GUESSES ? UNLOCK_STAGES[attempt] : UNLOCK_STAGES[UNLOCK_STAGES.length - 1];
+    setUnlockedDuration(dur);
+    unlockedDurationRef.current = dur;
+  }, []);
+
+  // ── Reset ────────────────────────────────────────────────────────────────────
+  const reset = useCallback((song: Song) => {
+    const initial = UNLOCK_STAGES[0];
+    setCurrentSong(song);
+    setGuesses([]);
+    setCurrentAttempt(0);
+    setUnlockedDuration(initial);
+    unlockedDurationRef.current = initial;
+    setGameStatus('playing');
+    setCurrentTime(0);
+  }, []);
+
+  return useMemo(() => ({
     currentSong, guesses, currentAttempt, unlockedDuration,
     gameStatus, isPlaying, currentTime, volume,
-    play, pause, submitGuess, skip, nextSong, setSong, setVolume,
-  };
+    play, pause, submitGuess, skip, nextSong, setSong, loadState, reset, setVolume,
+  }), [
+    currentSong, guesses, currentAttempt, unlockedDuration,
+    gameStatus, isPlaying, currentTime, volume,
+    play, pause, submitGuess, skip, nextSong, setSong, loadState, reset, setVolume,
+  ]);
 }

@@ -1,4 +1,4 @@
-import type { ItunesTrack } from '../services/itunes';
+import { fetchTopCharts, searchItunes, type ItunesTrack } from '../services/itunes';
 import type { Song, GameMode } from '../types';
 import { MODE_CONFIG } from './modes';
 
@@ -14,13 +14,34 @@ export function itunesToSong(track: ItunesTrack): Song {
     audioUrl: track.previewUrl,
     artworkUrl: track.artworkUrl100.replace('100x100', '300x300'),
     genre: track.primaryGenreName,
+    releaseDate: track.releaseDate,
   };
 }
 
 /** The 6 unlock stages in seconds */
-export const UNLOCK_STAGES: number[] = [1, 2, 4, 7, 11, 16];
+export const UNLOCK_STAGES: number[] = [0.1, 0.5, 2, 4, 8, 16];
 
 export const MAX_GUESSES = 6;
+
+/** Artists that should appear more frequently (40% of games) */
+export const BIASED_ARTISTS = [
+  'Taco Hemingway', 'Mata', 'Bedoes', 'Kizo', 'White 2115', 'Oki', 'Szpaku',
+  'Drake', 'Kanye West', 'Travis Scott', 'Kendrick Lamar', 'The Weeknd',
+  'Future', 'Metro Boomin', 'Gunna', 'Playboi Carti', 'Central Cee', 'Tyler, The Creator',
+  'A$AP Rocky', 'J. Cole', '21 Savage', 'Lil Uzi Vert', 'Nicki Minaj',
+  'Cardi B', 'Megan Thee Stallion', 'Doja Cat', 'Rihanna', 'Beyoncé',
+  'Post Malone', 'Juice WRLD', 'XXXTENTACION', 'Sfera Ebbasta', 'Pop Smoke', 'Ice Spice'
+];
+
+export function isBiasedArtist(artistName: string): boolean {
+  const lower = artistName.toLowerCase();
+  return BIASED_ARTISTS.some(name => {
+    const lowerName = name.toLowerCase();
+    const escaped = lowerName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(^|\\b)${escaped}(\\b|$)`, 'i');
+    return regex.test(lower);
+  });
+}
 
 const HIPHOP_GENRE_KEYWORDS = [
   'hip-hop',
@@ -29,60 +50,123 @@ const HIPHOP_GENRE_KEYWORDS = [
   'trap',
   'drill',
   'grime',
-  'r&b/soul',
-  'rnb/soul',
-  'r&b',
-  'rnb',
-  'urban',
 ];
 
 function isHipHopSong(song: Song): boolean {
   const genre = (song.genre ?? '').toLowerCase();
-  return HIPHOP_GENRE_KEYWORDS.some((keyword) => genre.includes(keyword));
+  // Must START with one of our keywords to be considered a primary hip-hop/rap track.
+  return HIPHOP_GENRE_KEYWORDS.some((keyword) => genre.startsWith(keyword));
+}
+
+/** 
+ * Heuristic to detect Polish songs/artists.
+ */
+function isPolishSong(song: Song): boolean {
+  const polishChars = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/;
+  if (polishChars.test(song.title) || polishChars.test(song.artist)) {
+    return true;
+  }
+
+  const polishArtists = [
+    'Taco Hemingway', 'Quebonafide', 'Bedoes', 'Kizo', 'Malik Montana', 'Young Leosia', 
+    'Mata', 'Sobel', 'Smolasty', 'White 2115', 'Oki', 'Szpaku', 'Gibbs', 'Sanah', 
+    'Dawid Podsiadło', 'Mrozu', 'Brodka', 'Daria Zawiałow', 'Zalewski', 'Margaret',
+    'Kult', 'Dżem', 'Lady Pank', 'Perfect', 'Myslovitz', 'Happysad', 'Pidżama Porno',
+    'Strachy na Lachy', 'T.Love', 'Vito Bambino', 'PRO8L3M', 'Sokół', 'Pezet', 'Hemp Gru',
+    'Paluch', 'Białas', 'ReTo', 'KęKę', 'Kali', 'O.S.T.R.', 'Fisz', 'Emade', 'Grubson',
+    'Kuba Karaś', 'The Dumplings', 'Behemoth', 'Riverside', 'Turoń', 'Blanka',
+    'Zipera', 'WWO', 'Molesta', 'Grammatik', 'Słoń', 'DonGURALesko', 'Borixon',
+    'Avi', 'Louis Villain', 'Kaz Bałagane', 'Belmondo', 'Opał', 'Shellerini',
+    'Guzior', 'Kukon', 'Miszel', 'Zdechły Osa', 'Jan-Rapowanie', 'Kacperczyk'
+  ];
+
+  const lowerArtist = song.artist.toLowerCase();
+  return polishArtists.some(name => {
+    const lowerName = name.toLowerCase();
+    const escaped = lowerName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(^|\\b)${escaped}(\\b|$)`, 'i');
+    return regex.test(lowerArtist);
+  });
 }
 
 // ─── Pool fetcher ─────────────────────────────────────────────────────────────
 
 export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song[]> {
   const modeConfig = MODE_CONFIG[mode];
-  const queries = modeConfig.queries;
-  const country = modeConfig.country;
-  const isHipHopMode = modeConfig.theme === 'hiphop';
-  const BATCH    = 6;
-  const songs: Song[] = [];
-  const seen = new Set<string>();
+  const isCharts = modeConfig.theme === 'charts';
+  
+  try {
+    let pool: Song[] = [];
 
-  for (let i = 0; i < queries.length; i += BATCH) {
-    const batch = queries.slice(i, i + BATCH);
-    const results = await Promise.allSettled(
-      batch.map(async (q) => {
-        const url =
-          `https://itunes.apple.com/search` +
-          `?term=${encodeURIComponent(q)}&entity=song&media=music&limit=1&country=${country}`;
-        const res  = await fetch(url);
-        const data = await res.json() as { results: Partial<ItunesTrack>[] };
-        return data.results.find(
-          (t): t is ItunesTrack =>
-            !!t.trackId && !!t.trackName && !!t.artistName && !!t.previewUrl,
-        ) ?? null;
-      }),
-    );
+    if (isCharts) {
+      // "Chart Toppers" category: Strictly use the RSS Top 200 feed (Trending)
+      const tracks = await fetchTopCharts(200, modeConfig.country);
+      pool = tracks.map(itunesToSong);
+    } else {
+      // General/Hip-Hop categories: Use search for broader, "evergreen" popular variety
+      // We search for multiple broad terms to get a massive pool of ~400+ songs
+      const queries = modeConfig.theme === 'hiphop' 
+        ? (modeConfig.region === 'polish' ? ['rap polski', 'hip hop pl', 'trap polska'] : ['best hip hop', 'rap hits', '90s rap'])
+        : (modeConfig.region === 'polish' ? ['polska muzyka', 'polskie hity', 'pop polska'] : ['popular songs', 'top hits', 'all time hits']);
 
-    for (const r of results) {
-      if (r.status === 'fulfilled' && r.value) {
-        const song = itunesToSong(r.value);
-
-        if (isHipHopMode && !isHipHopSong(song)) {
-          continue;
+      const results = await Promise.all(
+        queries.map(q => searchItunes(q, 150, modeConfig.country))
+      );
+      
+      const seenIds = new Set<string>();
+      results.flat().forEach(t => {
+        if (!seenIds.has(String(t.trackId))) {
+          pool.push(itunesToSong(t));
+          seenIds.add(String(t.trackId));
         }
+      });
+    }
 
-        if (!seen.has(song.id)) {
-          seen.add(song.id);
-          songs.push(song);
-        }
+    // Apply strict genre/language filters
+    if (modeConfig.theme === 'hiphop') {
+      pool = pool.filter(isHipHopSong);
+    }
+    if (modeConfig.region === 'polish') {
+      pool = pool.filter(isPolishSong);
+    }
+
+    // BIAS INJECTION: Ensure biased artists are always present
+    const biasedInPool = pool.filter(s => isBiasedArtist(s.artist));
+    if (biasedInPool.length < 20) {
+      const shuffleBias = [...BIASED_ARTISTS].sort(() => Math.random() - 0.5);
+      const targets = shuffleBias.slice(0, 8); // Inject 8 random VIPs
+      
+      for (const artist of targets) {
+        try {
+          const extra = await searchItunes(artist, 5, modeConfig.country);
+          const filteredExtra = extra.map(itunesToSong).filter(s => {
+            if (modeConfig.theme === 'hiphop' && !isHipHopSong(s)) return false;
+            if (modeConfig.region === 'polish' && !isPolishSong(s)) return false;
+            return true;
+          });
+          
+          const existingIds = new Set(pool.map(s => s.id));
+          for (const s of filteredExtra) {
+            if (!existingIds.has(s.id)) {
+              pool.push(s);
+              existingIds.add(s.id);
+            }
+          }
+        } catch (e) {}
       }
     }
-  }
+    
+    if (pool.length === 0) throw new Error('No songs found matching the criteria.');
 
-  return songs;
+    // Fisher-Yates Shuffle
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+
+    return pool;
+  } catch (error) {
+    console.error('Failed to fetch song pool:', error);
+    throw error;
+  }
 }

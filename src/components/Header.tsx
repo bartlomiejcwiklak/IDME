@@ -2,7 +2,7 @@ import type { HeaderProps } from '../types';
 
 export default function Header({ logoSrc, onHelpOpen, onSettingsOpen }: HeaderProps) {
   return (
-    <header className="w-full grid grid-cols-[1fr_auto_1fr] items-center px-2 sm:px-4 pt-5 pb-3">
+    <header className="w-full grid grid-cols-[1fr_auto_1fr] items-center px-2 sm:px-4 pt-5 pb-3 mb-[6px]">
       {/* Left: help icon */}
       <button
         onClick={onHelpOpen}
