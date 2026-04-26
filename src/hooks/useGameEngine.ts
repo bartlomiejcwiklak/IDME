@@ -190,9 +190,8 @@ export function useGameEngine(): GameState & GameActions {
         setUnlockedDuration(dur);
         unlockedDurationRef.current = dur;
       } else {
-        const full = UNLOCK_STAGES[UNLOCK_STAGES.length - 1];
-        setUnlockedDuration(full);
-        unlockedDurationRef.current = full;
+        setUnlockedDuration(30);
+        unlockedDurationRef.current = 30;
         setGameStatus('lost');
       }
       return next;
@@ -227,9 +226,8 @@ export function useGameEngine(): GameState & GameActions {
 
     if (isCorrect) {
       setGuesses((prev) => [...prev, entry]);
-      const full = UNLOCK_STAGES[UNLOCK_STAGES.length - 1];
-      setUnlockedDuration(full);
-      unlockedDurationRef.current = full;
+      setUnlockedDuration(30);
+      unlockedDurationRef.current = 30;
       setGameStatus('won');
     } else {
       advanceAttempt(entry);
@@ -268,7 +266,8 @@ export function useGameEngine(): GameState & GameActions {
 
     // Recalculate duration based on attempts
     const attempt = state.guesses.length;
-    const dur = attempt < MAX_GUESSES ? UNLOCK_STAGES[attempt] : UNLOCK_STAGES[UNLOCK_STAGES.length - 1];
+    const isOver = state.gameStatus !== 'playing';
+    const dur = isOver ? 30 : (attempt < MAX_GUESSES ? UNLOCK_STAGES[attempt] : 30);
     setUnlockedDuration(dur);
     unlockedDurationRef.current = dur;
   }, []);

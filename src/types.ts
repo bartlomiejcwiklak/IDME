@@ -66,6 +66,8 @@ export interface EndGameModalProps {
   correctSong: Song;
   guesses: GuessEntry[];
   onPlayNext: () => void;
+  isPlaying: boolean;
+  onPlayPause: () => void;
 }
 
 export interface HeaderProps {

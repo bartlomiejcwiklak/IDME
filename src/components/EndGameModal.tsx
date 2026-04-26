@@ -1,7 +1,14 @@
 import type { EndGameModalProps } from '../types';
 import { MAX_GUESSES } from '../data/songs';
 
-export default function EndGameModal({ gameStatus, correctSong, guesses, onPlayNext }: EndGameModalProps) {
+export default function EndGameModal({ 
+  gameStatus, 
+  correctSong, 
+  guesses, 
+  onPlayNext,
+  isPlaying,
+  onPlayPause
+}: EndGameModalProps) {
   const won = gameStatus === 'won';
   const triesUsed = guesses.filter((g) => g.status !== 'empty').length;
   const correctAttempt = guesses.findIndex((g) => g.status === 'correct') + 1;
@@ -56,26 +63,46 @@ export default function EndGameModal({ gameStatus, correctSong, guesses, onPlayN
           )}
         </div>
 
-        {/* Correct song card */}
-        <div className="w-full glass rounded-xl p-4 mb-5 flex items-center gap-4"
-          style={{ borderColor: 'rgba(34,197,94,0.2)', borderWidth: 1, borderStyle: 'solid' }}
-        >
+        {/* Correct song card with player */}
+        <div className="w-full glass rounded-xl p-4 mb-5 flex items-center gap-4 border border-white/10">
           {correctSong.artworkUrl ? (
-            <img
-              src={correctSong.artworkUrl}
-              alt={correctSong.album ?? correctSong.title}
-              className="w-14 h-14 rounded-xl flex-shrink-0 object-cover shadow-lg"
-            />
-          ) : (
-            <div className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center text-2xl"
-              style={{ background: 'rgba(34,197,94,0.12)' }}>
-              🎵
+            <div className="relative group flex-shrink-0">
+              <img
+                src={correctSong.artworkUrl}
+                alt={correctSong.album ?? correctSong.title}
+                className="w-16 h-16 rounded-xl object-cover shadow-lg"
+              />
+              <button
+                onClick={onPlayPause}
+                className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl opacity-100 transition-opacity"
+                aria-label={isPlaying ? "Pause preview" : "Play full preview"}
+              >
+                {isPlaying ? (
+                  <svg className="w-8 h-8 text-acid" fill="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="4" width="4" height="16" rx="1"/>
+                    <rect x="14" y="4" width="4" height="16" rx="1"/>
+                  </svg>
+                ) : (
+                  <svg className="w-8 h-8 text-acid ml-1" fill="currentColor" viewBox="0 0 24 24">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                )}
+              </button>
             </div>
+          ) : (
+            <button
+              onClick={onPlayPause}
+              className="w-16 h-16 rounded-xl flex-shrink-0 flex items-center justify-center text-2xl bg-white/10 hover:bg-white/20 transition-colors"
+            >
+              {isPlaying ? "⏸️" : "▶️"}
+            </button>
           )}
+
           <div className="min-w-0 flex-1">
             <div className="font-bold text-base truncate">{correctSong.title}</div>
             <div className="text-sm text-gray-400 truncate">{correctSong.artist}</div>
-            <div className="flex items-center justify-between gap-4 mt-0.5">
+            
+            <div className="flex items-center justify-between gap-2 mt-0.5">
               {correctSong.album && (
                 <div className="text-[10px] text-gray-600 truncate">{correctSong.album}</div>
               )}
@@ -84,6 +111,12 @@ export default function EndGameModal({ gameStatus, correctSong, guesses, onPlayN
                   {new Date(correctSong.releaseDate).getFullYear()}
                 </div>
               )}
+            </div>
+
+            <div className="mt-2">
+              <div className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] animate-pulse-glow text-acid">
+                {isPlaying ? "Playing Full Preview" : "Click artwork to listen"}
+              </div>
             </div>
           </div>
         </div>

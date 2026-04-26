@@ -303,6 +303,8 @@ function Game({
           correctSong={game.currentSong}
           guesses={game.guesses}
           onPlayNext={handlePlayNextGame}
+          isPlaying={game.isPlaying}
+          onPlayPause={game.isPlaying ? game.pause : game.play}
         />
       )}
 
