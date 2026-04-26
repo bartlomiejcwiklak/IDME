@@ -118,6 +118,8 @@ export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song
       // We search for multiple broad terms to get a massive pool of ~400+ songs
       const queries = modeConfig.theme === 'hiphop' 
         ? (modeConfig.region === 'polish' ? ['rap polski', 'hip hop pl', 'trap polska'] : ['best hip hop', 'rap hits', '90s rap'])
+        : modeConfig.theme === 'gaming'
+        ? ['video game soundtrack', 'original game score', 'gaming music hits', 'nintendo music', 'league of legends music']
         : (modeConfig.region === 'polish' ? ['polska muzyka', 'polskie hity', 'pop polska'] : ['popular songs', 'top hits', 'all time hits']);
 
       const results = await Promise.all(

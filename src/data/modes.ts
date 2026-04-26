@@ -7,7 +7,7 @@ export interface GameModeMeta {
   loadingText: string;
   country: 'us' | 'pl';
   region: 'global' | 'polish';
-  theme: 'all' | 'hiphop' | 'charts';
+  theme: 'all' | 'hiphop' | 'charts' | 'gaming';
   flag: string;
   genreId?: string;
 }
@@ -45,6 +45,16 @@ const MODE_DEFINITIONS: ModeDefinition[] = [
     region: 'global',
     theme: 'charts',
     flag: '🌍',
+  },
+  {
+    value: 'global-gaming',
+    label: 'Gaming',
+    description: 'Iconic soundtracks and gaming hits',
+    loadingText: 'Loading gaming OSTs',
+    country: 'us',
+    region: 'global',
+    theme: 'gaming',
+    flag: '🎮',
   },
   {
     value: 'polish-all',

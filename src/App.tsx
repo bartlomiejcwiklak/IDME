@@ -149,9 +149,6 @@ function Game({
     setSelectedSong(null);
   };
 
-  const handleVolumeChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onVolumeChange(Number(event.target.value));
-  };
 
   const attemptsLeft = MAX_GUESSES - game.currentAttempt;
   const gameOver = game.gameStatus !== 'playing';
@@ -330,21 +327,26 @@ export default function App() {
   // Store full game state per category that persists across switches and refreshes
   const [categoryStates, setCategoryStates] = useState<Record<GameMode, CategoryState>>(() => {
     const saved = localStorage.getItem('idme-category-states');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.warn('Failed to parse saved category states:', e);
-      }
-    }
-    return {
+    const DEFAULTS: Record<GameMode, CategoryState> = {
       'global-all': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
       'global-hiphop': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
       'global-charts': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
+      'global-gaming': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
       'polish-all': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
       'polish-hiphop': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
       'polish-charts': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
     };
+
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Merge parsed state with defaults to ensure new categories are present
+        return { ...DEFAULTS, ...parsed };
+      } catch (e) {
+        console.warn('Failed to parse saved category states:', e);
+      }
+    }
+    return DEFAULTS;
   });
 
   useEffect(() => {

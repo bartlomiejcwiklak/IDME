@@ -4,6 +4,7 @@ export type GameMode =
   | 'global-all'
   | 'global-hiphop'
   | 'global-charts'
+  | 'global-gaming'
   | 'polish-all'
   | 'polish-hiphop'
   | 'polish-charts';
