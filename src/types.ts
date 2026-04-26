@@ -76,3 +76,9 @@ export interface HeaderProps {
 export interface HelpModalProps {
   onClose: () => void;
 }
+
+export interface SettingsModalProps {
+  volume: number;
+  onVolumeChange: (volume: number) => void;
+  onClose: () => void;
+}

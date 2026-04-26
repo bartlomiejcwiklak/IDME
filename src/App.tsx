@@ -13,6 +13,7 @@ import GuessHistory from './components/GuessHistory';
 import SearchBar from './components/SearchBar';
 import EndGameModal from './components/EndGameModal';
 import HelpModal from './components/HelpModal';
+import SettingsModal from './components/SettingsModal';
 import CategoryDropdown from './components/CategoryDropdown';
 import FlagIcon from './components/FlagIcon';
 
@@ -92,6 +93,7 @@ function Game({
   }, [volume, game]);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   // ── Initialize or restore state ─────────────────────────────────────────────
   useEffect(() => {
@@ -160,7 +162,7 @@ function Game({
         <Header
           logoSrc={logo}
           onHelpOpen={() => setShowHelp(true)}
-          onSettingsOpen={() => { /* future */ }}
+          onSettingsOpen={() => setShowSettings(true)}
         />
       </div>
 
@@ -279,33 +281,15 @@ function Game({
           {!gameOver && (
             <aside className="w-full">
               <div className="lg:sticky lg:top-4 flex flex-col gap-6">
-                <div className="h-[82px] flex flex-col justify-center border-2 border-acid bg-black px-4 py-3 shadow-[4px_4px_0_#d9ff42]">
-                  <div className="flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.28em] text-gray-500">
-                    <span>Master volume</span>
-                    <span className="text-acid font-semibold tracking-normal">{Math.round(volume * 100)}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={volume}
-                    onChange={handleVolumeChange}
-                    aria-label="Master volume"
-                    className="volume-slider mt-3 w-full"
-                  />
-                </div>
-                <div>
-                  <SearchBar
-                    selectedSong={selectedSong}
-                    onSelect={setSelectedSong}
-                    onSkip={handleSkip}
-                    onSubmit={handleSubmit}
-                    disabled={gameOver}
-                    searchCountry={searchCountry}
-                    resetKey={mode}
-                  />
-                </div>
+                <SearchBar
+                  selectedSong={selectedSong}
+                  onSelect={setSelectedSong}
+                  onSkip={handleSkip}
+                  onSubmit={handleSubmit}
+                  disabled={gameOver}
+                  searchCountry={searchCountry}
+                  resetKey={mode}
+                />
               </div>
             </aside>
           )}
@@ -326,6 +310,14 @@ function Game({
       )}
 
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+      
+      {showSettings && (
+        <SettingsModal
+          volume={volume}
+          onVolumeChange={onVolumeChange}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
     </div>
   );
 }
