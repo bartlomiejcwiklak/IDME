@@ -35,7 +35,7 @@ const PROXY = _rawProxy
   ? (_rawProxy.startsWith('http') ? _rawProxy : `https://${_rawProxy}`)
   : undefined;
 const BASE_SEARCH = PROXY ? `${PROXY}/search` : 'https://itunes.apple.com/search';
-const BASE_RSS = PROXY ? `${PROXY}/rss` : 'https://itunes.apple.com';
+const BASE_RSS = PROXY ? PROXY : 'https://itunes.apple.com';
 
 /** Search iTunes and return tracks that have a preview URL */
 export async function searchItunes(
