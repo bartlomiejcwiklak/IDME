@@ -14,7 +14,8 @@ import SearchBar from './components/SearchBar';
 import EndGameModal from './components/EndGameModal';
 import HelpModal from './components/HelpModal';
 import SettingsModal from './components/SettingsModal';
-import CategoryDropdown from './components/CategoryDropdown';
+import ModeSelector from './components/ModeSelector';
+import ModeMenu from './components/ModeMenu';
 import FlagIcon from './components/FlagIcon';
 
 // ── Loading screen ────────────────────────────────────────────────────────────
@@ -127,6 +128,7 @@ function Game({
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showHelp, setShowHelp] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showModeMenu, setShowModeMenu] = useState(false);
 
   // ── Initialize or restore state ─────────────────────────────────────────────
   useEffect(() => {
@@ -208,10 +210,11 @@ function Game({
           <div className="w-full min-w-0 flex flex-col">
             <div className="w-full h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
 
-            <div className="px-4 pb-1 lg:px-0">
-              <div className="h-[82px] flex items-start">
-                <CategoryDropdown value={mode} onChange={onModeChange} />
-              </div>
+            <div className="px-4 pb-4 lg:px-0">
+              <ModeSelector 
+                value={mode} 
+                onOpenMenu={() => setShowModeMenu(true)} 
+              />
             </div>
 
             <main className="flex-1 flex flex-col gap-4 px-4 py-4 lg:px-0">
@@ -413,6 +416,14 @@ function Game({
       )}
 
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+
+      {showModeMenu && (
+        <ModeMenu
+          currentMode={mode}
+          onSelect={onModeChange}
+          onClose={() => setShowModeMenu(false)}
+        />
+      )}
 
       {showSettings && (
         <SettingsModal

@@ -165,16 +165,16 @@
   /* ── Input ────────────────────────────────────────────── */
   .brutal-input {
     background: #000;
-    border: 2px solid #333;
+    border: 2px solid rgba(255, 255, 255, 0.1);
     color: #fff;
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 500;
     outline: none;
-    transition: border-color 0.1s;
+    transition: all 0.2s ease;
   }
   .brutal-input:focus-within {
     border-color: #d9ff42;
-    box-shadow: 3px 3px 0px #d9ff42;
+    box-shadow: 0 0 15px rgba(217, 255, 66, 0.15);
   }
 
   /* ── Dropdown ─────────────────────────────────────────── */
@@ -251,3 +251,17 @@
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: #000; }
 ::-webkit-scrollbar-thumb { background: #333; }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(217, 255, 66, 0.2);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(217, 255, 66, 0.4);
+}
