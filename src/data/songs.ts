@@ -283,8 +283,20 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
       });
     }
 
-    // Apply strict genre/language filters
+    // Apply strict genre/language/date filters
     pool = pool.filter(isCleanTrack);
+
+    if (modeConfig.theme === 'decades') {
+      pool = pool.filter(s => {
+        if (!s.releaseDate) return false;
+        const year = new Date(s.releaseDate).getFullYear();
+        if (mode === 'decades-80s') return year >= 1980 && year <= 1989;
+        if (mode === 'decades-90s') return year >= 1990 && year <= 1999;
+        if (mode === 'decades-00s') return year >= 2000 && year <= 2009;
+        if (mode === 'decades-10s') return year >= 2010 && year <= 2019;
+        return true;
+      });
+    }
 
     if (modeConfig.theme === 'hiphop') {
       pool = pool.filter(isHipHopSong);
