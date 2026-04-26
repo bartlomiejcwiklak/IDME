@@ -35,6 +35,10 @@ export interface CategoryState {
   guesses: GuessEntry[];
   gameStatus: GameStatus;
   playedIds: string[];
+  currentStreak: number;
+  bestStreak: number;
+  totalCorrect: number;
+  totalWrong: number;
 }
 
 

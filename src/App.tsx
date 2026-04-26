@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useSongPool } from './hooks/useSongPool';
 import { MAX_GUESSES, isBiasedArtist, isCuratedGamingAlbum } from './data/songs';
@@ -121,13 +121,20 @@ function Game({
   // ── Sync state back to App ──────────────────────────────────────────────────
   useEffect(() => {
     if (!game.currentSong.id) return;
+
     onStateChange({
       currentSong: game.currentSong,
       guesses: [...game.guesses],
       gameStatus: game.gameStatus,
       playedIds: initialState.playedIds || [],
     });
-  }, [game.currentSong, game.guesses, game.gameStatus, onStateChange, initialState.playedIds]);
+  }, [
+    game.currentSong, 
+    game.guesses, 
+    game.gameStatus, 
+    onStateChange, 
+    initialState.playedIds
+  ]);
 
   const modeMeta = getGameModeMeta(mode);
   const isPolish = modeMeta.country === 'pl';
@@ -217,7 +224,7 @@ function Game({
                         <>
                           <div className="text-sm font-semibold text-gray-300">Mystery Track</div>
                           <div className="text-xs text-gray-600">
-                            {isPolish ? 'Zgadnij piosenkę!' : 'Guess the song!'}
+                            Guess the song!
                           </div>
                         </>
                       )}
@@ -278,6 +285,40 @@ function Game({
           {!gameOver && (
             <aside className="w-full">
               <div className="lg:sticky lg:top-4 flex flex-col gap-6">
+                {/* Stats Box */}
+                <div className="glass rounded-xl border border-white/5 shadow-xl overflow-hidden">
+                  {/* Primary: Streaks */}
+                  <div className="flex items-center justify-between gap-4 px-4 py-3 border-b border-white/5">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] uppercase tracking-[0.2em] text-gray-500 font-bold mb-1">Current Streak</span>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-xl font-black text-acid tabular-nums leading-none">{initialState.currentStreak || 0}</span>
+                        <span className="text-[9px] text-acid/60 font-bold">WINS</span>
+                      </div>
+                    </div>
+                    <div className="w-px h-8 bg-white/10" />
+                    <div className="flex flex-col text-right">
+                      <span className="text-[9px] uppercase tracking-[0.2em] text-gray-500 font-bold mb-1">Best Streak</span>
+                      <div className="flex items-baseline gap-1.5 justify-end">
+                        <span className="text-xl font-black text-white tabular-nums leading-none">{initialState.bestStreak || 0}</span>
+                        <span className="text-[9px] text-white/40 font-bold">WINS</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Secondary: Totals */}
+                  <div className="grid grid-cols-2 bg-black/40">
+                    <div className="px-4 py-2 flex items-center justify-between border-r border-white/5">
+                      <span className="text-[9px] uppercase tracking-widest text-gray-600 font-bold">Solved</span>
+                      <span className="text-sm font-bold text-gray-300 tabular-nums">{initialState.totalCorrect || 0}</span>
+                    </div>
+                    <div className="px-4 py-2 flex items-center justify-between">
+                      <span className="text-[9px] uppercase tracking-widest text-gray-600 font-bold">Failed</span>
+                      <span className="text-sm font-bold text-gray-300 tabular-nums">{initialState.totalWrong || 0}</span>
+                    </div>
+                  </div>
+                </div>
+
                 <SearchBar
                   selectedSong={selectedSong}
                   onSelect={setSelectedSong}
@@ -285,6 +326,7 @@ function Game({
                   onSubmit={handleSubmit}
                   disabled={gameOver}
                   searchCountry={searchCountry}
+                  placeholder="Search any song or artist…"
                   resetKey={mode}
                 />
               </div>
@@ -330,20 +372,26 @@ export default function App() {
   const [categoryStates, setCategoryStates] = useState<Record<GameMode, CategoryState>>(() => {
     const saved = localStorage.getItem('idme-category-states');
     const DEFAULTS: Record<GameMode, CategoryState> = {
-      'global-all': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
-      'global-hiphop': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
-      'global-charts': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
-      'global-gaming': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
-      'polish-all': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
-      'polish-hiphop': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
-      'polish-charts': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [] },
+      'global-all': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'global-hiphop': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'global-charts': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'global-gaming': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'polish-all': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'polish-hiphop': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'polish-charts': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
     };
 
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Merge parsed state with defaults to ensure new categories are present
-        return { ...DEFAULTS, ...parsed };
+        // Deep merge parsed state with defaults to ensure all fields (like streaks) are present
+        const merged = { ...DEFAULTS };
+        (Object.keys(parsed) as GameMode[]).forEach((key) => {
+          if (merged[key]) {
+            merged[key] = { ...merged[key], ...parsed[key] };
+          }
+        });
+        return merged;
       } catch (e) {
         console.warn('Failed to parse saved category states:', e);
       }
@@ -364,11 +412,26 @@ export default function App() {
     localStorage.setItem('idme-volume', volume.toString());
   }, [volume]);
 
-  const handleStateChange = useCallback((updatedState: CategoryState) => {
-    setCategoryStates((prev) => ({
-      ...prev,
-      [mode]: updatedState,
-    }));
+  const handleStateChange = useCallback((state: Partial<CategoryState>) => {
+    setCategoryStates((prev) => {
+      const old = prev[mode];
+      const newState = { ...old, ...state };
+
+      // Handle streak and totals update on game end
+      if (old.gameStatus === 'playing' && state.gameStatus && state.gameStatus !== 'playing') {
+        const won = state.gameStatus === 'won';
+        newState.currentStreak = won ? (old.currentStreak || 0) + 1 : 0;
+        newState.bestStreak = Math.max(old.bestStreak || 0, newState.currentStreak);
+        
+        if (won) {
+          newState.totalCorrect = (old.totalCorrect || 0) + 1;
+        } else {
+          newState.totalWrong = (old.totalWrong || 0) + 1;
+        }
+      }
+
+      return { ...prev, [mode]: newState as CategoryState };
+    });
   }, [mode]);
 
   const handleModeChange = (newMode: GameMode) => {
@@ -439,6 +502,7 @@ export default function App() {
       }
 
       const newState: CategoryState = {
+        ...currentState,
         currentSong: newSong,
         guesses: [],
         gameStatus: 'playing',

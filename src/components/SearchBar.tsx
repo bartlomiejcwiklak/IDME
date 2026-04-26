@@ -160,7 +160,7 @@ export default function SearchBar({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             onFocus={() => results.length > 0 && setIsOpen(true)}
-            placeholder={searchCountry === 'pl' ? 'Szukaj piosenki lub artysty…' : 'Search any song or artist…'}
+            placeholder="Search any song or artist…"
             aria-label="Search for a song"
             aria-autocomplete="list"
             aria-expanded={isOpen}
@@ -227,9 +227,7 @@ export default function SearchBar({
       {/* Hint */}
       {!selectedSong && query.length === 0 && (
         <p className="text-center text-xs text-gray-700">
-          {searchCountry === 'pl'
-            ? 'Szukaj po polsku — miliony piosenek przez iTunes'
-            : 'Search from millions of songs via iTunes'}
+          Search from millions of songs via iTunes
         </p>
       )}
 
