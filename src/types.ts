@@ -8,7 +8,11 @@ export type GameMode =
   | 'polish-all'
   | 'polish-hiphop'
   | 'polish-charts'
-  | 'artist-discography';
+  | 'artist-discography'
+  | 'decades-80s'
+  | 'decades-90s'
+  | 'decades-00s'
+  | 'decades-10s';
 
 export interface Song {
   id: string;

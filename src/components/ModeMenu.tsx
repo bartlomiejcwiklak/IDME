@@ -89,7 +89,7 @@ export default function ModeMenu({ onSelect, onClose, currentMode }: ModeMenuPro
               <div className="h-px w-full bg-white/5" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {GAME_MODE_OPTIONS.filter(m => m.region === 'global' && m.value !== 'artist-discography' && m.theme !== 'gaming').map((mode) => (
+              {GAME_MODE_OPTIONS.filter(m => m.region === 'global' && m.value !== 'artist-discography' && m.theme !== 'gaming' && m.theme !== 'decades').map((mode) => (
                 <ModeTile key={mode.value} mode={mode} currentMode={currentMode} onSelect={onSelect} onClose={onClose} />
               ))}
             </div>
@@ -103,6 +103,19 @@ export default function ModeMenu({ onSelect, onClose, currentMode }: ModeMenuPro
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {GAME_MODE_OPTIONS.filter(m => m.region === 'polish').map((mode) => (
+                <ModeTile key={mode.value} mode={mode} currentMode={currentMode} onSelect={onSelect} onClose={onClose} />
+              ))}
+            </div>
+          </section>
+
+          {/* Section: Decades */}
+          <section>
+            <div className="flex items-center gap-4 mb-6">
+              <h3 className="text-[10px] uppercase tracking-[0.4em] text-gray-500 font-black whitespace-nowrap">Decades</h3>
+              <div className="h-px w-full bg-white/5" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {GAME_MODE_OPTIONS.filter(m => m.theme === 'decades').map((mode) => (
                 <ModeTile key={mode.value} mode={mode} currentMode={currentMode} onSelect={onSelect} onClose={onClose} />
               ))}
             </div>

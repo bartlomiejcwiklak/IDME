@@ -67,33 +67,50 @@ function ErrorScreen({ message, onRetry }: { message: string; onRetry: () => voi
 }
 
 // ── Artist Setup screen ───────────────────────────────────────────────────────
-function ArtistSetupScreen({ onSelect }: { onSelect: (artist: string) => void }) {
+function ArtistSetupScreen({ onSelect, onCancel }: { onSelect: (artist: string) => void, onCancel: () => void }) {
   const [query, setQuery] = useState('');
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-8 px-4 max-w-md mx-auto">
-      <div className="text-center space-y-2">
-        <div className="text-4xl mb-4">🎤</div>
-        <h2 className="text-2xl font-bold text-white">Pick Your Artist</h2>
-        <p className="text-gray-400">We'll fetch their top songs for you to guess.</p>
-      </div>
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 animate-fade-in">
+      <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={onCancel} />
       
-      <div className="w-full space-y-4">
-        <input
-          type="text"
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all"
-          placeholder="Artist name (e.g. Drake, Taylor Swift...)"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && query.trim() && onSelect(query.trim())}
-          autoFocus
-        />
-        <button
-          onClick={() => query.trim() && onSelect(query.trim())}
-          className="w-full btn-primary py-4 text-lg"
-          disabled={!query.trim()}
+      <div className="relative w-full max-w-md bg-black border border-white/10 rounded-3xl p-8 shadow-2xl animate-scale-up">
+        <button 
+          onClick={onCancel}
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-gray-400 transition-colors"
         >
-          Start Playing
+          ✕
         </button>
+
+        <div className="text-center space-y-2 mb-8">
+          <div className="text-4xl mb-4">🎤</div>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Pick Your Artist</h2>
+          <p className="text-sm text-gray-500">We'll fetch their discography for you to guess.</p>
+        </div>
+        
+        <div className="space-y-4">
+          <input
+            type="text"
+            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-acid/50 transition-all"
+            placeholder="Artist name (e.g. Mata, Drake...)"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && query.trim() && onSelect(query.trim())}
+            autoFocus
+          />
+          <button
+            onClick={() => query.trim() && onSelect(query.trim())}
+            className="w-full btn-primary py-4 text-lg"
+            disabled={!query.trim()}
+          >
+            Start Playing
+          </button>
+          <button
+            onClick={onCancel}
+            className="w-full text-xs text-gray-600 hover:text-gray-400 py-2 transition-colors"
+          >
+            Cancel and go back
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -439,6 +456,7 @@ function Game({
 // ── Root ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [mode, setMode] = useState<GameMode>('global-all');
+  const [prevMode, setPrevMode] = useState<GameMode>('global-all');
   const [artistQuery, setArtistQuery] = useState('');
   const pool = useSongPool(mode, artistQuery);
 
@@ -454,6 +472,10 @@ export default function App() {
       'polish-hiphop': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'polish-charts': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'artist-discography': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'decades-80s': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'decades-90s': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'decades-00s': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'decades-10s': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
     };
 
     if (saved) {
@@ -511,6 +533,7 @@ export default function App() {
 
   const handleModeChange = (newMode: GameMode) => {
     if (newMode !== mode) {
+      setPrevMode(mode);
       setArtistQuery(''); // Clear artist search when switching modes
       setMode(newMode);
     }
@@ -596,7 +619,10 @@ export default function App() {
     <div className="min-h-screen flex flex-col items-center">
       <div className="w-full">
         {mode === 'artist-discography' && !artistQuery && (
-          <ArtistSetupScreen onSelect={setArtistQuery} />
+          <ArtistSetupScreen 
+            onSelect={setArtistQuery} 
+            onCancel={() => handleModeChange(prevMode)}
+          />
         )}
 
         {mode === 'artist-discography' && artistQuery && pool.status === 'loading' && (

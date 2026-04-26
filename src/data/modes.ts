@@ -7,7 +7,7 @@ export interface GameModeMeta {
   loadingText: string;
   country: 'us' | 'pl';
   region: 'global' | 'polish';
-  theme: 'all' | 'hiphop' | 'charts' | 'gaming';
+  theme: 'all' | 'hiphop' | 'charts' | 'gaming' | 'decades';
   flag: string;
   genreId?: string;
 }
@@ -96,6 +96,46 @@ const MODE_DEFINITIONS: ModeDefinition[] = [
     region: 'global',
     theme: 'all',
     flag: '🎤',
+  },
+  {
+    value: 'decades-80s',
+    label: 'Top of 80s',
+    description: '1980-1989',
+    loadingText: 'Loading 80s hits',
+    country: 'us',
+    region: 'global',
+    theme: 'decades',
+    flag: '📼',
+  },
+  {
+    value: 'decades-90s',
+    label: 'Top of 90s',
+    description: '1990-1999',
+    loadingText: 'Loading 90s hits',
+    country: 'us',
+    region: 'global',
+    theme: 'decades',
+    flag: '💿',
+  },
+  {
+    value: 'decades-00s',
+    label: 'Top of 00s',
+    description: '2000-2009',
+    loadingText: 'Loading 00s hits',
+    country: 'us',
+    region: 'global',
+    theme: 'decades',
+    flag: '💽',
+  },
+  {
+    value: 'decades-10s',
+    label: 'Top of 2010s',
+    description: '2010-2019',
+    loadingText: 'Loading 2010s hits',
+    country: 'us',
+    region: 'global',
+    theme: 'decades',
+    flag: '📱',
   },
 ];
 

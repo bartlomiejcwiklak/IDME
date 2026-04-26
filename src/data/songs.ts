@@ -254,13 +254,21 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
         }
       });
     } else {
-      // General/Hip-Hop categories: Use search for broader, "evergreen" popular variety
+      // General/Hip-Hop/Gaming/Decades categories: Use search for broader, "evergreen" popular variety
       // We search for multiple broad terms to get a massive pool of ~400+ songs
-      const queries = modeConfig.theme === 'hiphop'
-        ? (modeConfig.region === 'polish' ? ['rap polski', 'hip hop pl', 'trap polska'] : ['best hip hop', 'rap hits', '90s rap'])
-        : modeConfig.theme === 'gaming'
-          ? ['official video game soundtrack', 'original game score', 'video game music', 'nintendo music ost', 'gaming ost']
-          : (modeConfig.region === 'polish' ? ['polska muzyka', 'polskie hity', 'pop polska'] : ['popular songs', 'top hits', 'all time hits']);
+      let queries: string[] = [];
+      if (modeConfig.theme === 'decades') {
+        if (mode === 'decades-80s') queries = ['80s smash hits', '1980s pop', '1980s rock', 'best of 80s', '80s classics'];
+        else if (mode === 'decades-90s') queries = ['90s smash hits', '1990s pop', '90s r&b', 'best of 90s', '90s classics'];
+        else if (mode === 'decades-00s') queries = ['2000s smash hits', '00s pop', '2000s r&b', 'best of 00s', '00s classics'];
+        else if (mode === 'decades-10s') queries = ['2010s smash hits', '2010s pop', '2010s dance', 'best of 2010s'];
+      } else if (modeConfig.theme === 'hiphop') {
+        queries = modeConfig.region === 'polish' ? ['rap polski', 'hip hop pl', 'trap polska'] : ['best hip hop', 'rap hits', '90s rap'];
+      } else if (modeConfig.theme === 'gaming') {
+        queries = ['official video game soundtrack', 'original game score', 'video game music', 'nintendo music ost', 'gaming ost'];
+      } else {
+        queries = modeConfig.region === 'polish' ? ['polska muzyka', 'polskie hity', 'pop polska'] : ['popular songs', 'top hits', 'all time hits'];
+      }
 
       const results = await Promise.all(
         queries.map(q => searchItunes(q, 150, modeConfig.country))
