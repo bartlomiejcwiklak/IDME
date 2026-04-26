@@ -73,6 +73,7 @@ export interface SearchBarProps {
   disabled: boolean;
   searchCountry?: string; // 'us' | 'pl' etc — defaults to 'us'
   resetKey?: string;
+  songPool?: Song[]; // When provided, search filters this list locally (no iTunes call)
 }
 
 export interface EndGameModalProps {

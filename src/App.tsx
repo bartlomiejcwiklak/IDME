@@ -417,6 +417,7 @@ function Game({
                   disabled={gameOver}
                   searchCountry={searchCountry}
                   resetKey={mode}
+                  songPool={mode === 'artist-discography' ? songs : undefined}
                 />
               </div>
             </aside>

@@ -12,6 +12,7 @@ export default function SearchBar({
   disabled,
   searchCountry = 'us',
   resetKey,
+  songPool,
 }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Song[]>([]);
@@ -65,18 +66,53 @@ export default function SearchBar({
     }
     setIsLoading(true);
     try {
-      const tracks = await searchItunes(term, resultLimit, country);
-      const songs = tracks
-        .map((t) => itunesToSong(t))
-        .sort((a, b) => scoreResult(b, term) - scoreResult(a, term));
-      setResults(songs);
-      setIsOpen(songs.length > 0);
+      if (songPool) {
+        // Artist mode: filter the loaded discography pool locally (instant, no API call)
+        const q = term.toLowerCase().trim();
+        const filtered = songPool
+          .filter(s =>
+            s.title.toLowerCase().includes(q) ||
+            s.artist.toLowerCase().includes(q) ||
+            (s.album ?? '').toLowerCase().includes(q)
+          )
+          .sort((a, b) => scoreResult(b, term) - scoreResult(a, term))
+          .slice(0, resultLimit);
+        setResults(filtered);
+        setIsOpen(filtered.length > 0);
+      } else {
+        // Regular mode: run 4 parallel iTunes queries to maximise coverage
+        const otherCountry = country === 'pl' ? 'us' : 'pl';
+        const fetchLimit = resultLimit * 2;
+        const [r1, r2, r3, r4] = await Promise.all([
+          searchItunes(term, fetchLimit, country),
+          searchItunes(term, fetchLimit, country, 'songTerm'),
+          searchItunes(term, fetchLimit, otherCountry),
+          searchItunes(term, fetchLimit, otherCountry, 'songTerm'),
+        ]);
+
+        // Merge, deduplicate by trackId, re-rank, then cap to resultLimit
+        const seenIds = new Set<string>();
+        const merged = [...r1, ...r2, ...r3, ...r4].filter(t => {
+          const id = String(t.trackId);
+          if (seenIds.has(id)) return false;
+          seenIds.add(id);
+          return true;
+        });
+
+        const songs = merged
+          .map((t) => itunesToSong(t))
+          .sort((a, b) => scoreResult(b, term) - scoreResult(a, term))
+          .slice(0, resultLimit);
+
+        setResults(songs);
+        setIsOpen(songs.length > 0);
+      }
     } catch {
       setResults([]);
     } finally {
       setIsLoading(false);
     }
-  }, [resultLimit]);
+  }, [resultLimit, songPool]);
 
   // Clear results when the country (mode) changes
   useEffect(() => {
