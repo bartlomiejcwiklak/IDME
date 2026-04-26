@@ -231,15 +231,20 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
 
     if (mode === 'artist-discography') {
       if (!artistQuery) return [];
-      // Fetch from both PL and US stores to get a comprehensive discography
-      const [resultsPl, resultsUs] = await Promise.all([
-        searchItunes(artistQuery, 200, 'pl', 'allArtistTerm'),
-        searchItunes(artistQuery, 200, 'us', 'allArtistTerm')
-      ]);
-      
-      const combined = [...resultsPl, ...resultsUs];
       const search = artistQuery.toLowerCase();
-      
+
+      // 1. Primary artist search (valid iTunes attribute)
+      // 2. Featured artist search — iTunes includes all artists in the artistName field,
+      //    e.g. "Taco Hemingway feat. Mata", so searching "feat. Mata" finds those tracks
+      const [plPrimary, usPrimary, plFeat, usFeat] = await Promise.all([
+        searchItunes(artistQuery, 200, 'pl', 'artistTerm'),
+        searchItunes(artistQuery, 200, 'us', 'artistTerm'),
+        searchItunes(`feat. ${artistQuery}`, 200, 'pl'),
+        searchItunes(`feat. ${artistQuery}`, 200, 'us'),
+      ]);
+
+      const combined = [...plPrimary, ...usPrimary, ...plFeat, ...usFeat];
+
       const seenIds = new Set<number>();
       pool = combined
         .filter(t => {
@@ -249,9 +254,12 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
         })
         .map(itunesToSong)
         .filter(s => {
-          const artist = s.artist.toLowerCase();
-          // Split into individual artists to allow matches where the artist is featured
-          const allArtists = artist.split(/&|,|x|\/|\bfeat\.|\bft\.|\bwith\b/i).map(a => a.trim());
+          // Split the full artist string on all common separators, then check
+          // if any of the resulting parts exactly matches the searched artist name
+          const allArtists = s.artist
+            .toLowerCase()
+            .split(/&|,|\bfeat\.|\bft\.|\bwith\b/i)
+            .map(a => a.trim());
           return allArtists.includes(search);
         });
     } else if (isCharts) {
