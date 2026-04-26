@@ -233,8 +233,8 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
       if (!artistQuery) return [];
       // Fetch from both PL and US stores to get a comprehensive discography
       const [resultsPl, resultsUs] = await Promise.all([
-        searchItunes(artistQuery, 200, 'pl', 'artistTerm'),
-        searchItunes(artistQuery, 200, 'us', 'artistTerm')
+        searchItunes(artistQuery, 200, 'pl', 'allArtistTerm'),
+        searchItunes(artistQuery, 200, 'us', 'allArtistTerm')
       ]);
       
       const combined = [...resultsPl, ...resultsUs];
@@ -250,10 +250,9 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
         .map(itunesToSong)
         .filter(s => {
           const artist = s.artist.toLowerCase();
-          const primaryArtist = artist.split(/&|,|\bfeat\.|\bft\.|\bwith\b/i)[0].trim();
-          // Strict: the primary artist must be an EXACT match for the search term
-          // This allows "Mata" and "Mata & White 2115", but rejects "Mata Mandir Singh"
-          return primaryArtist === search;
+          // Split into individual artists to allow matches where the artist is featured
+          const allArtists = artist.split(/&|,|x|\/|\bfeat\.|\bft\.|\bwith\b/i).map(a => a.trim());
+          return allArtists.includes(search);
         });
     } else if (isCharts) {
       // "Chart Toppers" category: Apple RSS only reliably serves 'topsongs' (max 100).
