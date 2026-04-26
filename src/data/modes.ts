@@ -47,16 +47,6 @@ const MODE_DEFINITIONS: ModeDefinition[] = [
     flag: '🌍',
   },
   {
-    value: 'global-gaming',
-    label: 'Gaming',
-    description: 'Iconic soundtracks and gaming hits',
-    loadingText: 'Loading gaming OSTs',
-    country: 'us',
-    region: 'global',
-    theme: 'gaming',
-    flag: '🎮',
-  },
-  {
     value: 'polish-all',
     label: 'Polish: All',
     description: 'Popular Polish tracks across genres',
@@ -86,6 +76,16 @@ const MODE_DEFINITIONS: ModeDefinition[] = [
     region: 'polish',
     theme: 'charts',
     flag: '🇵🇱',
+  },
+  {
+    value: 'global-gaming',
+    label: 'Gaming soundtracks',
+    description: 'Iconic soundtracks and gaming hits',
+    loadingText: 'Loading gaming OSTs',
+    country: 'us',
+    region: 'global',
+    theme: 'gaming',
+    flag: '🎮',
   },
   {
     value: 'artist-discography',
