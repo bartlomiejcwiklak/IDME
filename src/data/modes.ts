@@ -120,7 +120,7 @@ const MODE_DEFINITIONS: ModeDefinition[] = [
   {
     value: 'polish-classics',
     label: 'Polish: Classics',
-    description: 'Nostalgiczne polskie klasyki sprzed 2014',
+    description: 'Nostalgic classic for Polish listeners',
     loadingText: 'Loading Polish classics',
     country: 'pl',
     region: 'polish',
