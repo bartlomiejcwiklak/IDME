@@ -212,10 +212,14 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
         .map(itunesToSong)
         .filter(s => {
           const artist = s.artist.toLowerCase();
-          // Regex ensures the search term matches as a whole word (prevents "Eduardo Mata" matching just "Mata" if we want strictly "Mata")
-          // but still allows for common separators like "&", "feat.", etc.
-          const regex = new RegExp(`(^|\\b)${searchLower}(\\b|$)`, 'i');
-          return regex.test(artist);
+          const search = artistQuery.toLowerCase();
+          
+          // Split by common separators to find the primary artist (the first one)
+          const primaryArtist = artist.split(/&|,|\bfeat\.|\bft\.|\bwith\b/i)[0].trim();
+          
+          // Strict: must be exact match OR start with the search term
+          // (e.g., "Mata" matches "Mata", "Taco" matches "Taco Hemingway", but "Mata" NO LONGER matches "Vanessa da Mata")
+          return primaryArtist === search || primaryArtist.startsWith(search + ' ');
         });
     } else if (isCharts) {
       // "Chart Toppers" category: Apple RSS only reliably serves 'topsongs' (max 100).
