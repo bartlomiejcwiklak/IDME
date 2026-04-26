@@ -211,7 +211,8 @@ export function useGameEngine(): GameState & GameActions {
 
   const getMainArtist = (artist: string) => {
     // Split by common feature separators and take the first part
-    return normalise(artist.split(/ feat\. | ft\. | & | , | with /i)[0]);
+    // Using a more robust regex that doesn't rely on specific spacing
+    return normalise(artist.split(/&|,|x|\/|\bfeat\.|\bft\.|\bwith\b/i)[0]);
   };
 
   // ── Submit ────────────────────────────────────────────────────────────────────
