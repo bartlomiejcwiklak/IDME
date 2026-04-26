@@ -7,7 +7,7 @@ export interface GameModeMeta {
   loadingText: string;
   country: 'us' | 'pl';
   region: 'global' | 'polish';
-  theme: 'all' | 'hiphop' | 'charts' | 'gaming' | 'decades' | 'spotify';
+  theme: 'all' | 'hiphop' | 'charts' | 'gaming' | 'decades';
   flag: string;
   genreId?: string;
 }

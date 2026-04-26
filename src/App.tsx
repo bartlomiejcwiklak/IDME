@@ -117,56 +117,6 @@ function ArtistSetupScreen({ onSelect, onCancel }: { onSelect: (artist: string) 
   );
 }
 
-// ── Spotify Setup screen ──────────────────────────────────────────────────────
-function SpotifySetupScreen({ onSelect, onCancel }: { onSelect: (url: string) => void, onCancel: () => void }) {
-  const [url, setUrl] = useState('');
-  return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 animate-fade-in">
-      <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={onCancel} />
-      
-      <div className="relative w-full max-w-md bg-black border border-white/10 rounded-3xl p-8 shadow-2xl animate-scale-up">
-        <button 
-          onClick={onCancel}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-gray-400 transition-colors"
-        >
-          ✕
-        </button>
-
-        <div className="text-center space-y-2 mb-8">
-          <div className="text-4xl mb-4">🟢</div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Spotify Playlist</h2>
-          <p className="text-sm text-gray-500">Paste a link to any public Spotify playlist.</p>
-        </div>
-        
-        <div className="space-y-4">
-          <input
-            type="text"
-            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#1DB954]/50 transition-all"
-            placeholder="https://open.spotify.com/playlist/..."
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && url.trim() && onSelect(url.trim())}
-            autoFocus
-          />
-          <button
-            onClick={() => url.trim() && onSelect(url.trim())}
-            className="w-full py-4 text-lg rounded-2xl font-bold bg-[#1DB954] text-black hover:bg-[#1ed760] transition-colors disabled:opacity-50"
-            disabled={!url.trim() || !url.includes('spotify.com/playlist/')}
-          >
-            Load Playlist
-          </button>
-          <button
-            onClick={onCancel}
-            className="w-full text-xs text-gray-600 hover:text-gray-400 py-2 transition-colors"
-          >
-            Cancel and go back
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Game ──────────────────────────────────────────────────────────────────────
 function Game({
   songs,
@@ -515,8 +465,7 @@ export default function App() {
   const [mode, setMode] = useState<GameMode>('global-all');
   const [prevMode, setPrevMode] = useState<GameMode>('global-all');
   const [artistQuery, setArtistQuery] = useState('');
-  const [spotifyUrl, setSpotifyUrl] = useState('');
-  const pool = useSongPool(mode, artistQuery, spotifyUrl);
+  const pool = useSongPool(mode, artistQuery);
 
   // Global click sound effect
   useEffect(() => {
@@ -551,7 +500,6 @@ export default function App() {
       'decades-90s': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'decades-00s': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'decades-10s': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
-      'spotify-playlist': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
     };
 
     if (saved) {
@@ -620,7 +568,7 @@ export default function App() {
   const handleModeChange = (newMode: GameMode) => {
     if (newMode !== mode) {
       setPrevMode(mode);
-      setArtistQuery(''); 
+      setArtistQuery(''); // Clear artist search when switching modes
       setMode(newMode);
     }
   };
@@ -712,17 +660,6 @@ export default function App() {
         )}
 
         {mode === 'artist-discography' && artistQuery && pool.status === 'loading' && (
-          <LoadingScreen mode={mode} />
-        )}
-
-        {mode === 'spotify-playlist' && !spotifyUrl && (
-          <SpotifySetupScreen 
-            onSelect={setSpotifyUrl} 
-            onCancel={() => handleModeChange(prevMode)}
-          />
-        )}
-
-        {mode === 'spotify-playlist' && spotifyUrl && pool.status === 'loading' && (
           <LoadingScreen mode={mode} />
         )}
 

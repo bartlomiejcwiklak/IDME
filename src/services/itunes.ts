@@ -31,7 +31,7 @@ interface ItunesResponse {
 // Normalise: ensure the value always starts with https:// so it's never
 // treated as a relative path (e.g. if the secret was set without the scheme).
 const _rawProxy = (import.meta as any).env?.VITE_ITUNES_PROXY as string | undefined;
-export const PROXY = _rawProxy
+const PROXY = _rawProxy
   ? (_rawProxy.startsWith('http') ? _rawProxy : `https://${_rawProxy}`)
   : undefined;
 const BASE_SEARCH = PROXY ? `${PROXY}/search` : 'https://itunes.apple.com/search';

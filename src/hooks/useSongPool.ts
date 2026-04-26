@@ -14,7 +14,7 @@ export interface SongPool {
  * Loads the game song pool from iTunes.
  * Re-fetches automatically whenever `mode` changes.
  */
-export function useSongPool(mode: GameMode, artistQuery?: string, spotifyUrl?: string): SongPool {
+export function useSongPool(mode: GameMode, artistQuery?: string): SongPool {
   const [songs, setSongs] = useState<Song[]>([]);
   const [status, setStatus] = useState<PoolStatus>('loading');
   const [error, setError] = useState<string | null>(null);
@@ -25,12 +25,12 @@ export function useSongPool(mode: GameMode, artistQuery?: string, spotifyUrl?: s
     setStatus('loading');
     setError(null);
 
-    // Don't fetch if it's spotify mode but no URL is provided yet
-    if (mode === 'spotify-playlist' && !spotifyUrl) {
+    // Don't fetch if it's artist mode but no query is provided yet
+    if (mode === 'artist-discography' && !artistQuery) {
       return;
     }
 
-    fetchSongPool(mode, artistQuery, spotifyUrl)
+    fetchSongPool(mode, artistQuery)
       .then((pool) => {
         if (cancelled) return;
         if (pool.length === 0) {
@@ -48,7 +48,7 @@ export function useSongPool(mode: GameMode, artistQuery?: string, spotifyUrl?: s
       });
 
     return () => { cancelled = true; };
-  }, [mode, artistQuery, spotifyUrl]);
+  }, [mode, artistQuery]);
 
   useEffect(() => {
     const cleanup = load();

@@ -1,4 +1,4 @@
-import { fetchTopChartsMeta, resolveTracksWithPreview, searchItunes, type ItunesTrack, PROXY } from '../services/itunes';
+import { fetchTopChartsMeta, resolveTracksWithPreview, searchItunes, type ItunesTrack } from '../services/itunes';
 import type { Song, GameMode } from '../types';
 import { MODE_CONFIG } from './modes';
 
@@ -229,19 +229,6 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
           // This allows "Mata" and "Mata & White 2115", but rejects "Mata Mandir Singh"
           return primaryArtist === search;
         });
-    } else if (mode === 'spotify-playlist') {
-      if (!spotifyUrl) return [];
-      const spotifyTracks = await fetchSpotifyPlaylistTracks(spotifyUrl);
-      if (spotifyTracks.length === 0) throw new Error('Could not load Spotify playlist. Make sure it is public.');
-
-      // Resolve Spotify tracks to iTunes tracks with previews
-      // We limit to top 80 tracks to avoid massive parallel requests
-      const limit = spotifyTracks.slice(0, 80);
-      const results = await Promise.all(
-        limit.map(t => searchItunes(`${t.artist} ${t.title}`, 1, 'us'))
-      );
-      
-      pool = results.flat().map(itunesToSong);
     } else if (isCharts) {
       // "Chart Toppers" category: Apple RSS only reliably serves 'topsongs' (max 100).
       // Supplement with search queries for variety and to pad the pool.
@@ -325,8 +312,8 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
     const biasedInPool = pool.filter(s => isBiasedArtist(s.artist));
 
     // For Gaming: Inject curated albums
-    if (mode === 'artist-discography' || modeConfig.theme === 'decades' || mode === 'spotify-playlist') {
-      // No injection for artist-specific mode, decades, or spotify playlists
+    if (mode === 'artist-discography' || modeConfig.theme === 'decades') {
+      // No injection for artist-specific mode or decades to preserve strict era filtering
     } else if (modeConfig.theme === 'gaming') {
       const shuffleAlbums = [...GAMING_ALBUMS].sort(() => Math.random() - 0.5);
       const targets = shuffleAlbums.slice(0, 10); // Inject 10 legendary albums
