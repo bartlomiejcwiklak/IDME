@@ -7,7 +7,7 @@ export interface GameModeMeta {
   loadingText: string;
   country: 'us' | 'pl';
   region: 'global' | 'polish';
-  theme: 'all' | 'hiphop' | 'charts' | 'gaming' | 'decades';
+  theme: 'all' | 'hiphop' | 'charts' | 'gaming' | 'decades' | 'spotify';
   flag: string;
   genreId?: string;
 }
@@ -136,6 +136,16 @@ const MODE_DEFINITIONS: ModeDefinition[] = [
     region: 'global',
     theme: 'decades',
     flag: '📱',
+  },
+  {
+    value: 'spotify-playlist',
+    label: 'Spotify Playlist',
+    description: 'Paste a Spotify link and guess',
+    loadingText: 'Fetching playlist tracks',
+    country: 'us',
+    region: 'global',
+    theme: 'spotify',
+    flag: '🟢',
   },
 ];
 

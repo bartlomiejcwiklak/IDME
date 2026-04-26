@@ -89,7 +89,7 @@ export default function ModeMenu({ onSelect, onClose, currentMode }: ModeMenuPro
               <div className="h-px w-full bg-white/5" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {GAME_MODE_OPTIONS.filter(m => m.region === 'global' && m.value !== 'artist-discography' && m.theme !== 'gaming' && m.theme !== 'decades').map((mode) => (
+              {GAME_MODE_OPTIONS.filter(m => m.region === 'global' && m.value !== 'artist-discography' && m.theme !== 'gaming' && m.theme !== 'decades' && m.theme !== 'spotify').map((mode) => (
                 <ModeTile key={mode.value} mode={mode} currentMode={currentMode} onSelect={onSelect} onClose={onClose} />
               ))}
             </div>
@@ -128,7 +128,7 @@ export default function ModeMenu({ onSelect, onClose, currentMode }: ModeMenuPro
               <div className="h-px w-full bg-white/5" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {GAME_MODE_OPTIONS.filter(m => m.value === 'artist-discography' || m.theme === 'gaming').map((mode) => (
+              {GAME_MODE_OPTIONS.filter(m => m.value === 'artist-discography' || m.theme === 'gaming' || m.theme === 'spotify').map((mode) => (
                 <ModeTile key={mode.value} mode={mode} currentMode={currentMode} onSelect={onSelect} onClose={onClose} />
               ))}
             </div>

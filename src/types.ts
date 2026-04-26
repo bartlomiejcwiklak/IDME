@@ -12,7 +12,8 @@ export type GameMode =
   | 'decades-80s'
   | 'decades-90s'
   | 'decades-00s'
-  | 'decades-10s';
+  | 'decades-10s'
+  | 'spotify-playlist';
 
 export interface Song {
   id: string;
