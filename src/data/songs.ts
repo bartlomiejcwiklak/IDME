@@ -196,14 +196,19 @@ function isCleanTrack(song: Song): boolean {
 
 // ─── Pool fetcher ─────────────────────────────────────────────────────────────
 
-export async function fetchSongPool(mode: GameMode = 'global-all'): Promise<Song[]> {
+export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?: string): Promise<Song[]> {
   const modeConfig = MODE_CONFIG[mode];
   const isCharts = modeConfig.theme === 'charts';
 
   try {
     let pool: Song[] = [];
 
-    if (isCharts) {
+    if (mode === 'artist-discography') {
+      if (!artistQuery) return [];
+      // Fetch specifically for the artist
+      const results = await searchItunes(artistQuery, 200, modeConfig.country);
+      pool = results.map(itunesToSong);
+    } else if (isCharts) {
       // "Chart Toppers" category: Apple RSS only reliably serves 'topsongs' (max 100).
       // Supplement with search queries for variety and to pad the pool.
       const chartsQueries = modeConfig.region === 'polish'

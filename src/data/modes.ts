@@ -87,6 +87,16 @@ const MODE_DEFINITIONS: ModeDefinition[] = [
     theme: 'charts',
     flag: '🇵🇱',
   },
+  {
+    value: 'artist-discography',
+    label: 'Artist Fan',
+    description: 'Guess songs from a specific artist',
+    loadingText: 'Loading discography',
+    country: 'us',
+    region: 'global',
+    theme: 'all',
+    flag: '🎤',
+  },
 ];
 
 export const GAME_MODE_OPTIONS = MODE_DEFINITIONS.map((option) => option);

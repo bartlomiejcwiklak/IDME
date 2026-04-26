@@ -65,6 +65,39 @@ function ErrorScreen({ message, onRetry }: { message: string; onRetry: () => voi
   );
 }
 
+// ── Artist Setup screen ───────────────────────────────────────────────────────
+function ArtistSetupScreen({ onSelect }: { onSelect: (artist: string) => void }) {
+  const [query, setQuery] = useState('');
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-8 px-4 max-w-md mx-auto">
+      <div className="text-center space-y-2">
+        <div className="text-4xl mb-4">🎤</div>
+        <h2 className="text-2xl font-bold text-white">Pick Your Artist</h2>
+        <p className="text-gray-400">We'll fetch their top songs for you to guess.</p>
+      </div>
+      
+      <div className="w-full space-y-4">
+        <input
+          type="text"
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all"
+          placeholder="Artist name (e.g. Drake, Taylor Swift...)"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && query.trim() && onSelect(query.trim())}
+          autoFocus
+        />
+        <button
+          onClick={() => query.trim() && onSelect(query.trim())}
+          className="w-full btn-primary py-4 text-lg"
+          disabled={!query.trim()}
+        >
+          Start Playing
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Game ──────────────────────────────────────────────────────────────────────
 function Game({
   songs,
@@ -395,7 +428,8 @@ function Game({
 // ── Root ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [mode, setMode] = useState<GameMode>('global-all');
-  const pool = useSongPool(mode);
+  const [artistQuery, setArtistQuery] = useState('');
+  const pool = useSongPool(mode, artistQuery);
 
   // Store full game state per category that persists across switches and refreshes
   const [categoryStates, setCategoryStates] = useState<Record<GameMode, CategoryState>>(() => {
@@ -408,6 +442,7 @@ export default function App() {
       'polish-all': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'polish-hiphop': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
       'polish-charts': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
+      'artist-discography': { currentSong: null, guesses: [], gameStatus: 'playing', playedIds: [], currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalWrong: 0 },
     };
 
     if (saved) {
@@ -464,7 +499,10 @@ export default function App() {
   }, [mode]);
 
   const handleModeChange = (newMode: GameMode) => {
-    setMode(newMode);
+    if (newMode !== mode) {
+      setArtistQuery(''); // Clear artist search when switching modes
+      setMode(newMode);
+    }
   };
 
   const handlePlayNext = () => {
@@ -545,7 +583,17 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col items-center">
       <div className="w-full">
-        {pool.status === 'loading' && <LoadingScreen mode={mode} />}
+        {mode === 'artist-discography' && !artistQuery && (
+          <ArtistSetupScreen onSelect={setArtistQuery} />
+        )}
+
+        {mode === 'artist-discography' && artistQuery && pool.status === 'loading' && (
+          <LoadingScreen mode={mode} />
+        )}
+
+        {mode !== 'artist-discography' && pool.status === 'loading' && (
+          <LoadingScreen mode={mode} />
+        )}
 
         {pool.status === 'error' && (
           <ErrorScreen

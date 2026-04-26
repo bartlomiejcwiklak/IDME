@@ -7,7 +7,8 @@ export type GameMode =
   | 'global-gaming'
   | 'polish-all'
   | 'polish-hiphop'
-  | 'polish-charts';
+  | 'polish-charts'
+  | 'artist-discography';
 
 export interface Song {
   id: string;
