@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useSongPool } from './hooks/useSongPool';
 import { MAX_GUESSES, isBiasedArtist } from './data/songs';
