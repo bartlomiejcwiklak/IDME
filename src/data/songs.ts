@@ -312,8 +312,8 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
     const biasedInPool = pool.filter(s => isBiasedArtist(s.artist));
 
     // For Gaming: Inject curated albums
-    if (mode === 'artist-discography') {
-      // No injection for artist-specific mode
+    if (mode === 'artist-discography' || modeConfig.theme === 'decades') {
+      // No injection for artist-specific mode or decades to preserve strict era filtering
     } else if (modeConfig.theme === 'gaming') {
       const shuffleAlbums = [...GAMING_ALBUMS].sort(() => Math.random() - 0.5);
       const targets = shuffleAlbums.slice(0, 10); // Inject 10 legendary albums
