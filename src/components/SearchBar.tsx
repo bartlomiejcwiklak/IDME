@@ -36,6 +36,27 @@ export default function SearchBar({
   }, []);
 
   // ── Live iTunes search with 350ms debounce ─────────────────────────────────
+  const scoreResult = (song: Song, term: string): number => {
+    const q = term.toLowerCase().trim();
+    const title = song.title.toLowerCase();
+    const artist = song.artist.toLowerCase();
+
+    let score = 0;
+    if (title === q) score += 100;                      // exact title match
+    else if (title.startsWith(q)) score += 60;          // title prefix match
+    else if (title.includes(q)) score += 30;            // title contains query
+
+    if (artist === q) score += 50;                      // exact artist match
+    else if (artist.startsWith(q)) score += 25;         // artist prefix match
+    else if (artist.includes(q)) score += 10;           // artist contains query
+
+    // Bonus: query words all appear in title
+    const words = q.split(/\s+/).filter(Boolean);
+    if (words.length > 1 && words.every(w => title.includes(w))) score += 20;
+
+    return score;
+  };
+
   const doSearch = useCallback(async (term: string, country: string) => {
     if (!term.trim()) {
       setResults([]);
@@ -45,7 +66,9 @@ export default function SearchBar({
     setIsLoading(true);
     try {
       const tracks = await searchItunes(term, resultLimit, country);
-      const songs = tracks.map((t) => itunesToSong(t));
+      const songs = tracks
+        .map((t) => itunesToSong(t))
+        .sort((a, b) => scoreResult(b, term) - scoreResult(a, term));
       setResults(songs);
       setIsOpen(songs.length > 0);
     } catch {
