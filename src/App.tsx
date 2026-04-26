@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useSongPool } from './hooks/useSongPool';
-import { MAX_GUESSES, isBiasedArtist, isCuratedGamingAlbum, GAMING_ALBUMS } from './data/songs';
+import { MAX_GUESSES, isBiasedArtist, isCuratedGamingAlbum } from './data/songs';
 import { getGameModeMeta } from './data/modes';
 import type { Song, GameMode, CategoryState } from './types';
 
