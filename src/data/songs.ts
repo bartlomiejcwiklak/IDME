@@ -2,6 +2,15 @@ import { fetchTopChartsMeta, resolveTracksWithPreview, searchItunes, lookupArtis
 import type { Song, GameMode } from '../types';
 import { MODE_CONFIG } from './modes';
 
+// ─── Banned Artists ───────────────────────────────────────────────────────────
+// Artists listed here are NEVER included in any song pool.
+// Add entries manually; matching is case-insensitive substring / word-boundary.
+export const BANNED_ARTISTS: string[] = [
+  // AI / generated music accounts — we never want these
+  'AI',
+  'A.I.',
+];
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Convert an iTunes API track to our Song model */
@@ -28,6 +37,23 @@ export const POLISH_VIP = [
   'Taco Hemingway', 'Mata', 'Bedoes', 'Kizo', 'White 2115', 'Oki', 'Szpaku',
   'Gibbs', 'Smolasty', 'Sobel', 'Quebonafide', 'Malik Montana', 'Young Leosia',
   'PRO8L3M', 'Pezet', 'Sokół', 'Avi', 'Guzior', 'Kukon', 'Miszel', 'Zdechły Osa'
+];
+
+/**
+ * Curated VIP list for "Polish: Classics" mode.
+ * 80% of picks are drawn from these legendary artists.
+ * Add / remove artists here to tune the pool.
+ */
+export const POLISH_CLASSICS_VIP: string[] = [
+  // Rock / Alternative
+  'Dżem', 'Lady Pank', 'Strachy na Lachy', 'Kult', 'Perfect', 'T.Love',
+  'Republika', 'Myslovitz', 'Happysad', 'Pidżama Porno', 'Wilki', 'Illusion',
+  'Maanam', 'Budka Suflera', 'Lombard', 'Hey', 'Vader', 'Behemoth', 'Riverside',
+  // Pop / Other
+  'Czerwone Gitary', 'Maryla Rodowicz', 'Stanisław Sojka', 'Kayah',
+  'Edyta Bartosiewicz', 'Anna Jantar', 'Bajm', 'Raz Dwa Trzy',
+  // Hip-Hop classics (only the OGs)
+  'Molesta Ewenement', 'WWO', 'Grammatik', 'Pezet', 'Sokół', 'Ostr',
 ];
 
 export const GLOBAL_VIP = [
@@ -73,6 +99,28 @@ export const GAMING_ALBUMS = [
 export function isBiasedArtist(artistName: string): boolean {
   const lower = artistName.toLowerCase();
   return BIASED_ARTISTS.some(name => {
+    const lowerName = name.toLowerCase();
+    const escaped = lowerName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(^|\\b)${escaped}(\\b|$)`, 'i');
+    return regex.test(lower);
+  });
+}
+
+/** Returns true if the artist matches any entry in BANNED_ARTISTS */
+export function isBannedArtist(artistName: string): boolean {
+  const lower = (artistName ?? '').toLowerCase();
+  return BANNED_ARTISTS.some(banned => {
+    const lowerBanned = banned.toLowerCase();
+    // Exact word-boundary match so e.g. "AI" doesn't block "Billie"
+    const escaped = lowerBanned.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(^|\\s|\\()${escaped}(\\s|\\)|$)`, 'i');
+    return regex.test(lower);
+  });
+}
+
+export function isClassicsVIPArtist(artistName: string): boolean {
+  const lower = (artistName ?? '').toLowerCase();
+  return POLISH_CLASSICS_VIP.some(name => {
     const lowerName = name.toLowerCase();
     const escaped = lowerName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(^|\\b)${escaped}(\\b|$)`, 'i');
@@ -339,7 +387,13 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
       } else if (modeConfig.theme === 'indie') {
         queries = ['indie hits', 'alternative indie songs', 'best indie rock', 'indie pop classics', 'alternative music hits', 'indie anthems'];
       } else if (modeConfig.theme === 'classics') {
-        queries = ['polskie przeboje klasyki', 'polska muzyka lata 90', 'polska muzyka lata 2000', 'polskie hity retro', 'klasyki polskiej muzyki'];
+        // Broad queries plus targeted VIP artist searches so we always have classics
+        queries = [
+          'polskie przeboje klasyki', 'polska muzyka lata 80', 'polska muzyka lata 90',
+          'polska muzyka lata 2000', 'polskie hity retro', 'klasyki polskiej muzyki',
+          'Dżem', 'Lady Pank', 'Strachy na Lachy', 'Kult', 'Perfect', 'Republika',
+          'Maanam', 'Budka Suflera', 'T.Love', 'Happysad', 'Myslovitz', 'Hey',
+        ];
       } else {
         queries = modeConfig.region === 'polish' ? ['polska muzyka', 'polskie hity', 'pop polska'] : ['popular songs', 'top hits', 'all time hits'];
       }
@@ -359,6 +413,9 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
 
     // Apply strict genre/language/date filters
     pool = pool.filter(isCleanTrack);
+
+    // Remove any banned artists from the pool
+    pool = pool.filter(s => !isBannedArtist(s.artist));
 
     if (modeConfig.theme === 'decades') {
       pool = pool.filter(s => {

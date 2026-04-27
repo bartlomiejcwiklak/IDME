@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useSongPool } from './hooks/useSongPool';
-import { MAX_GUESSES, isBiasedArtist, isCuratedGamingAlbum } from './data/songs';
+import { MAX_GUESSES, isBiasedArtist, isCuratedGamingAlbum, isClassicsVIPArtist } from './data/songs';
 import { getGameModeMeta } from './data/modes';
 import type { Song, GameMode, CategoryState } from './types';
 import { soundService } from './services/sounds';
@@ -158,6 +158,7 @@ function Game({
   const [showHelp, setShowHelp] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showModeMenu, setShowModeMenu] = useState(false);
+  const [isLoadingNextSong, setIsLoadingNextSong] = useState(false);
 
   // ── Initialize or restore state ─────────────────────────────────────────────
   useEffect(() => {
@@ -179,6 +180,7 @@ function Game({
 
       game.reset(initialSong);
     }
+    setIsLoadingNextSong(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [songs.length]);
 
@@ -216,6 +218,7 @@ function Game({
   };
 
   const handlePlayNextGame = () => {
+    setIsLoadingNextSong(true);
     onPlayNext();
     setSelectedSong(null);
   };
@@ -289,7 +292,22 @@ function Game({
                         </>
                       ) : (
                         <>
-                          <div className="text-sm font-semibold text-gray-300">Mystery Track</div>
+                          <div className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                            Mystery Track
+                            {isLoadingNextSong && (
+                              <span className="flex items-center gap-1">
+                                {[0, 1, 2].map((i) => (
+                                  <span
+                                    key={i}
+                                    className="inline-block w-1 h-1 rounded-full bg-acid"
+                                    style={{
+                                      animation: `dotBounce 1.0s ease-in-out ${i * 0.18}s infinite`,
+                                    }}
+                                  />
+                                ))}
+                              </span>
+                            )}
+                          </div>
                           <div className="text-xs text-gray-600">
                             Guess the song!
                           </div>
@@ -654,7 +672,25 @@ export default function App() {
         const albumSongs = byAlbum[randomAlbum];
         newSong = albumSongs[Math.floor(Math.random() * albumSongs.length)];
       }
-      // 2. Otherwise, 40% chance to pick from VIP biased artists (for Hip-hop/All)
+      // 2. If Polish Classics, 80% chance to pick from the VIP classic artists list
+      else if (mode === 'polish-classics') {
+        const classicsVIPEligible = eligible.filter(s => isClassicsVIPArtist(s.artist));
+        if (classicsVIPEligible.length > 0 && Math.random() < 0.8) {
+          // GROUP BY ARTIST to avoid "artist song count bias"
+          const byArtist: Record<string, Song[]> = {};
+          classicsVIPEligible.forEach(s => {
+            if (!byArtist[s.artist]) byArtist[s.artist] = [];
+            byArtist[s.artist].push(s);
+          });
+          const artists = Object.keys(byArtist);
+          const randomArtist = artists[Math.floor(Math.random() * artists.length)];
+          const artistSongs = byArtist[randomArtist];
+          newSong = artistSongs[Math.floor(Math.random() * artistSongs.length)];
+        } else {
+          newSong = eligible[Math.floor(Math.random() * eligible.length)];
+        }
+      }
+      // 3. Otherwise, 40% chance to pick from VIP biased artists (for Hip-hop/All)
       else if (biasEligible.length > 0 && Math.random() < 0.4) {
         // GROUP BY ARTIST to avoid "artist song count bias"
         const byArtist: Record<string, Song[]> = {};
@@ -668,7 +704,7 @@ export default function App() {
         const artistSongs = byArtist[randomArtist];
         newSong = artistSongs[Math.floor(Math.random() * artistSongs.length)];
       }
-      // 3. Fallback to true random selection from the whole pool
+      // 4. Fallback to true random selection from the whole pool
       else {
         newSong = eligible[Math.floor(Math.random() * eligible.length)];
       }
