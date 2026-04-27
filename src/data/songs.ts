@@ -432,7 +432,6 @@ function isGamingSong(song: Song): boolean {
   const isVideoGame =
     isCuratedGamingAlbum(album) ||
     genre.includes('video game') ||
-    genre.includes('soundtrack') ||
     album.includes('video game') ||
     album.includes('game score') ||
     album.includes('ost') ||
@@ -482,11 +481,23 @@ const BANNED_KEYWORDS = [
   'karaoke',
   'instrumental version',
   'tribute to',
+  'tribute version',
   'cover version',
   'unmixed',
   'lo-fi workout',
   'yoga music',
   'meditation music',
+  'originally by',
+  'originally performed by',
+  'in the style of',
+  'tribute',
+  'remix',
+  'cover',
+  'covers',
+  'piano version',
+  'orchestral version',
+  '8-bit version',
+  'lullaby version',
 ];
 
 function isCleanTrack(song: Song): boolean {
