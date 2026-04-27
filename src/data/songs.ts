@@ -11,6 +11,237 @@ export const BANNED_ARTISTS: string[] = [
   'A.I.',
 ];
 
+// ─── Predefiniowane pule artystów ─────────────────────────────────────────────
+// Gdy użytkownik wpisze poniższe nazwy artystów w trybie Artist Fan,
+// gra korzysta wyłącznie z tej statycznej listy piosenek — bez filtrów i API.
+// Artysta: Baro & Jaro — płyta "Projekt Zamęt" (2023)
+export const BARO_SONGS: import('../types').Song[] = [
+  {
+    id: '1684986851',
+    title: 'Co To Jest Rap? (Intro)',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/b5/ff/4b/b5ff4b88-c6eb-4b75-4b4e-a69b7551a610/mzaf_18392829353800704843.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684986853',
+    title: 'Cierpienie Od Sukcesu',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/13/a5/03/13a5030c-9270-9448-a8c0-be725153e229/mzaf_2787406049515036528.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684986854',
+    title: '686442',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/e9/fd/8d/e9fd8d45-b354-d17d-de3c-45277434b065/mzaf_13340924806885893602.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684986855',
+    title: 'Agugu',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/b9/76/b2/b976b2e9-fa7a-7a1a-e3b4-d5b989f11f11/mzaf_15653122264763451807.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987036',
+    title: 'Preludium (Skit)',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/bb/64/1b/bb641b67-bc0c-98f7-9fcf-31ec1daa65d6/mzaf_10779486978208022661.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987038',
+    title: 'Compton Brothers',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/72/09/16/72091631-81a1-b23e-0fd9-fc5216efa609/mzaf_14806309785750062955.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987039',
+    title: 'Łamać Zło',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/66/9e/94/669e94e3-9e37-f6b8-e14c-ef888479b927/mzaf_7755205593078530285.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987040',
+    title: 'Suvy (Czarno Na Białym)',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/35/37/cb/3537cb4c-dcec-a088-be93-dfc00d46e039/mzaf_15650420670051650972.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987041',
+    title: 'Mongolia',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/ef/c4/e8/efc4e834-7bab-c92a-e67c-bbc8e4f835e0/mzaf_9120685514985378575.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987042',
+    title: 'Fan Numer Jeden',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/72/eb/07/72eb07dc-33cb-3a4d-8c8b-e83c892bf08f/mzaf_773594286924967032.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987043',
+    title: 'PODOPIECZNY (feat. daunmian)',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/f6/6e/45/f66e4571-a3f4-8b7a-4827-731dd78d0d4a/mzaf_11912730241103551338.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987045',
+    title: 'BLOND (SKIT) (feat. daunmian)',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/2a/79/4f/2a794f81-1e4a-4766-d4a9-0c53098d8bfc/mzaf_959055806725182625.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987046',
+    title: 'Płaczemy, Razem',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/19/4d/77/194d776e-5dd5-ed16-c7c6-9624262970a9/mzaf_16680802396541585653.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987047',
+    title: 'Pamiętam, Że Byłeś Skłócony',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/53/f7/06/53f706d2-c090-4492-03f9-c6f5a87793cf/mzaf_465021152310221245.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987048',
+    title: 'Magnum Opus',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/8e/d3/d8/8ed3d891-8d7e-01bc-1f76-304739cedb20/mzaf_11392003656594963714.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987050',
+    title: 'Trybut Małego Zerknąć (Skit)',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/f0/96/43/f09643e4-fe32-e3d7-f955-9e293e302520/mzaf_8951120706020786249.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987051',
+    title: 'Nostalgicznie',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/78/5c/f2/785cf290-46dc-901a-b7ce-fc4e3748b61f/mzaf_7017946502927981900.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  {
+    id: '1684987052',
+    title: 'Dziękujemy Za Uwagę (Outro)',
+    artist: 'Baro & Jaro',
+    album: 'Projekt Zamęt',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/ea/a1/d7/eaa1d7da-a73d-2d7c-55c6-dfe38ce886a6/mzaf_10870903908905345548.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9d/fb/4c/9dfb4c0a-6a13-eb3d-297a-7682f073f2ca/5063292304572_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-04-15T12:00:00Z',
+  },
+  // ── Single: ODADOMIRAŻ (feat. Liify) — 2024 ─────────────────────────────────
+  {
+    id: '1759168700',
+    title: 'ODADOMIRAŻ (feat. Liify)',
+    artist: 'Baro',
+    album: 'ODADOMIRAŻ (feat. Liify) - Single',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/50/f8/05/50f805f8-4ad0-0b76-3e1a-fa9e571437e8/mzaf_10940775815500648714.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/43/69/67/43696762-6fab-facd-9cef-59fd1425b2b5/5063501585587_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2024-06-04T12:00:00Z',
+  },
+  // ── Single: Nocna Wyżerka — 2023 ────────────────────────────────────────────
+  {
+    id: '1708020691',
+    title: 'Nocna Wyżerka',
+    artist: 'Baro & Jaro',
+    album: 'Nocna Wyżerka - Single',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/b8/61/d6/b861d67a-a5f0-c351-0f05-02fa20750519/mzaf_17522301118464731325.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/11/81/e9/1181e9a6-33c5-7a78-4e98-ff1c7411ed59/5063248886190_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-09-11T12:00:00Z',
+  },
+  // ── Single: Chwast Polskiej Młodzieży — 2023 ────────────────────────────────
+  {
+    id: '1705288909',
+    title: 'Chwast Polskiej Młodzieży',
+    artist: 'Baro & Jaro',
+    album: 'Chwast Polskiej Młodzieży - Single',
+    audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/14/d3/e0/14d3e0cb-3344-969a-3834-6414f1b605b7/mzaf_8990923134288288026.plus.aac.p.m4a',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/e0/31/39/e0313907-7026-7e44-3e50-065dc86eaeaf/5063381530530_cover.jpg/300x300bb.jpg',
+    genre: 'Hip-Hop/Rap',
+    releaseDate: '2023-08-25T12:00:00Z',
+  },
+];
+
+/**
+ * Mapa artystów z predefiniowanymi pulami piosenek.
+ * Klucz: alias (lowercase), wartość: pula piosenek.
+ * Gdy użytkownik wpisze alias w Artist Fan mode, gra używa tej puli
+ * bez żadnych filtrów ani zapytań do API.
+ */
+export const PREDEFINED_ARTIST_POOLS: Record<string, import('../types').Song[]> = {
+  'baro': BARO_SONGS,
+  'baro & jaro': BARO_SONGS,
+};
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Convert an iTunes API track to our Song model */
@@ -279,6 +510,18 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
 
     if (mode === 'artist-discography') {
       if (!artistQuery) return [];
+
+      // ── Predefiniowana pula dla wybranych artystów (bez filtrów i API) ─────────
+      const queryLower = artistQuery.trim().toLowerCase();
+      if (PREDEFINED_ARTIST_POOLS[queryLower]) {
+        // Przetasuj i zwróć — żadnych filtrów, żadnego API
+        const staticPool = [...PREDEFINED_ARTIST_POOLS[queryLower]];
+        for (let i = staticPool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [staticPool[i], staticPool[j]] = [staticPool[j], staticPool[i]];
+        }
+        return staticPool;
+      }
       const search = artistQuery.toLowerCase();
 
       // ── Strategy 1: iTunes Lookup API (complete discography) ──────────────────
