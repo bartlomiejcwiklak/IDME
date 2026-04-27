@@ -122,6 +122,7 @@ function ArtistSetupScreen({ onSelect, onCancel }: { onSelect: (artist: string) 
 function Game({
   songs,
   mode,
+  artistQuery,
   initialState,
   onStateChange,
   onModeChange,
@@ -136,6 +137,7 @@ function Game({
 }: {
   songs: Song[];
   mode: GameMode;
+  artistQuery?: string;
   initialState: CategoryState;
   onStateChange: (state: Partial<CategoryState>) => void;
   onModeChange: (m: GameMode) => void;
@@ -248,6 +250,7 @@ function Game({
                 onOpenMenu={() => setShowModeMenu(true)}
                 isArtistMode={mode === 'artist-discography'}
                 onResetArtist={onResetArtist}
+                artistQuery={artistQuery}
               />
             </div>
 
@@ -751,6 +754,7 @@ export default function App() {
             key={mode + (categoryStates[mode].currentSong?.id || '')}
             songs={pool.songs}
             mode={mode}
+            artistQuery={artistQuery}
             initialState={categoryStates[mode]}
             onStateChange={handleStateChange}
             onModeChange={handleModeChange}

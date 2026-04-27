@@ -7,10 +7,16 @@ interface ModeSelectorProps {
   onOpenMenu: () => void;
   isArtistMode?: boolean;
   onResetArtist?: () => void;
+  artistQuery?: string;
 }
 
-export default function ModeSelector({ value, onOpenMenu, isArtistMode, onResetArtist }: ModeSelectorProps) {
+export default function ModeSelector({ value, onOpenMenu, isArtistMode, onResetArtist, artistQuery }: ModeSelectorProps) {
   const selected = getGameModeMeta(value);
+
+  // In Artist Fan mode, show the artist name alongside the mode label
+  const displayLabel = isArtistMode && artistQuery
+    ? `Artist Fan: ${artistQuery.charAt(0).toUpperCase() + artistQuery.slice(1)}`
+    : selected.label;
 
   return (
     <div className="w-full flex items-center gap-3">
@@ -24,7 +30,7 @@ export default function ModeSelector({ value, onOpenMenu, isArtistMode, onResetA
             Mode
           </div>
           <div className="font-bold text-sm truncate leading-tight" style={{ color: 'var(--text-primary)' }}>
-            {selected.label}
+            {displayLabel}
           </div>
         </div>
       </div>
@@ -34,11 +40,10 @@ export default function ModeSelector({ value, onOpenMenu, isArtistMode, onResetA
         <button
           onClick={onResetArtist}
           title="Pick a different artist"
-          className="h-[64px] w-[64px] flex items-center justify-center rounded-2xl border transition-all hover:bg-white/10 flex-shrink-0"
-          style={{ borderColor: 'var(--border-primary)', background: 'var(--glass-bg)', color: 'var(--text-muted)' }}
+          className="h-[64px] w-[64px] flex items-center justify-center rounded-2xl bg-acid hover:bg-[#c9eb3d] shadow-lg shadow-acid/10 transition-all flex-shrink-0"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          <svg className="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
         </button>
       )}
