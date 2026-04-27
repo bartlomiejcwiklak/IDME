@@ -430,7 +430,9 @@ function isGamingSong(song: Song): boolean {
 
   // Stricter gaming indicators
   const isVideoGame =
+    isCuratedGamingAlbum(album) ||
     genre.includes('video game') ||
+    genre.includes('soundtrack') ||
     album.includes('video game') ||
     album.includes('game score') ||
     album.includes('ost') ||
