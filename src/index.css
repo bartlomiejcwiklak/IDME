@@ -18,6 +18,11 @@
   --card-bg: #000000;
   --scrollbar-track: #000000;
   --scrollbar-thumb: #333333;
+  --accent-color: #d9ff42;
+  --streak-current: #d9ff42;
+  --streak-best: #ffffff;
+  --streak-muted: rgba(255, 255, 255, 0.4);
+  --progress-label: #d9ff42;
 }
 
 .light-mode {
@@ -36,6 +41,10 @@
   --card-bg: #ffffff;
   --scrollbar-track: #f4f4f5;
   --scrollbar-thumb: #d4d4d8;
+  --streak-current: #000000;
+  --streak-best: #000000;
+  --streak-muted: #71717a;
+  --progress-label: #000000;
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */
@@ -274,6 +283,11 @@
   .text-acid    { color: #d9ff42; }
   .bg-acid      { background: #d9ff42; }
   .border-acid  { border-color: #d9ff42; }
+
+  .text-streak-current { color: var(--streak-current); }
+  .text-streak-best    { color: var(--streak-best); }
+  .text-streak-muted   { color: var(--streak-muted); }
+  .text-progress-label { color: var(--progress-label); }
 
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

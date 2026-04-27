@@ -61,7 +61,7 @@ export default function AudioProgressBar({
             <span
               key={sec}
               className={`text-[9px] font-semibold tabular-nums transition-colors duration-500 ${
-                isUnlocked ? 'text-acid' : 'text-gray-600'
+                isUnlocked ? 'text-progress-label' : 'text-gray-600'
               }`}
             >
               {sec}s

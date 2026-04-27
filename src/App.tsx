@@ -317,7 +317,7 @@ function Game({
                   </div>
 
                   {game.isPlaying && (
-                    <div className="flex items-center gap-1.5 text-acid text-xs font-semibold">
+                    <div className="flex items-center gap-1.5 text-progress-label text-xs font-semibold">
                       <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-acid opacity-75" />
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-acid" />
@@ -404,16 +404,16 @@ function Game({
                     <div className="flex flex-col">
                       <span className="text-[9px] uppercase tracking-[0.2em] text-gray-500 font-bold mb-1">Current Streak</span>
                       <div className="flex items-baseline gap-1.5">
-                        <span className="text-xl font-black text-acid tabular-nums leading-none">{initialState.currentStreak || 0}</span>
-                        <span className="text-[9px] text-acid/60 font-bold">WINS</span>
+                        <span className="text-xl font-black text-streak-current tabular-nums leading-none">{initialState.currentStreak || 0}</span>
+                        <span className="text-[9px] text-streak-muted font-bold">WINS</span>
                       </div>
                     </div>
                     <div className="w-px h-8 bg-white/10" />
                     <div className="flex flex-col text-right">
                       <span className="text-[9px] uppercase tracking-[0.2em] text-gray-500 font-bold mb-1">Best Streak</span>
                       <div className="flex items-baseline gap-1.5 justify-end">
-                        <span className="text-xl font-black text-white tabular-nums leading-none">{initialState.bestStreak || 0}</span>
-                        <span className="text-[9px] text-white/40 font-bold">WINS</span>
+                        <span className="text-xl font-black text-streak-best tabular-nums leading-none">{initialState.bestStreak || 0}</span>
+                        <span className="text-[9px] text-streak-muted font-bold">WINS</span>
                       </div>
                     </div>
                   </div>
