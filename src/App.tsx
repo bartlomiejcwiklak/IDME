@@ -160,7 +160,6 @@ function Game({
   const [showHelp, setShowHelp] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showModeMenu, setShowModeMenu] = useState(false);
-  const [isLoadingNextSong, setIsLoadingNextSong] = useState(false);
 
   // ── Initialize or restore state ─────────────────────────────────────────────
   useEffect(() => {
@@ -182,7 +181,6 @@ function Game({
 
       game.reset(initialSong);
     }
-    setIsLoadingNextSong(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [songs.length]);
 
@@ -220,7 +218,6 @@ function Game({
   };
 
   const handlePlayNextGame = () => {
-    setIsLoadingNextSong(true);
     onPlayNext();
     setSelectedSong(null);
   };
@@ -297,12 +294,12 @@ function Game({
                         <>
                           <div className="text-sm font-semibold text-gray-300 flex items-center gap-2">
                             Mystery Track
-                            {isLoadingNextSong && (
-                              <span className="flex items-center gap-1">
+                            {game.isAudioLoading && (
+                              <span className="flex items-center gap-1 translate-y-[1px]">
                                 {[0, 1, 2].map((i) => (
                                   <span
                                     key={i}
-                                    className="inline-block w-1 h-1 rounded-full bg-acid"
+                                    className="inline-block w-1.5 h-1.5 rounded-full bg-acid"
                                     style={{
                                       animation: `dotBounce 1.0s ease-in-out ${i * 0.18}s infinite`,
                                     }}

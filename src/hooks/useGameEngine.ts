@@ -13,6 +13,7 @@ export interface GameState {
   currentTime: number;
   volume: number;
   audioError: string | null;
+  isAudioLoading: boolean;
 }
 
 export interface GameActions {
@@ -41,6 +42,7 @@ export function useGameEngine(): GameState & GameActions {
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolumeState] = useState(0.8);
   const [audioError, setAudioError] = useState<string | null>(null);
+  const [isAudioLoading, setIsAudioLoading] = useState(false);
 
   // ── Bootstrap audio element ───────────────────────────────────────────────────
   useEffect(() => {
@@ -107,9 +109,13 @@ export function useGameEngine(): GameState & GameActions {
     const onError = (e: any) => {
       console.error('Audio load error:', e);
       setAudioError('Failed to load audio. Please check your connection.');
-      setIsPlaying(false);
+      setIsAudioLoading(false);
       cancelAnimationFrame(rafId);
     };
+
+    const onWaiting = () => setIsAudioLoading(true);
+    const onCanPlay = () => setIsAudioLoading(false);
+    const onPlaying = () => setIsAudioLoading(false);
 
     const onTimeUpdate = () => {
       if (!audioRef.current) return;
@@ -129,6 +135,9 @@ export function useGameEngine(): GameState & GameActions {
     audio.addEventListener('ended', onEnded);
     audio.addEventListener('error', onError);
     audio.addEventListener('timeupdate', onTimeUpdate);
+    audio.addEventListener('waiting', onWaiting);
+    audio.addEventListener('canplay', onCanPlay);
+    audio.addEventListener('playing', onPlaying);
 
     return () => {
       audio.pause();
@@ -138,6 +147,9 @@ export function useGameEngine(): GameState & GameActions {
       audio.removeEventListener('ended', onEnded);
       audio.removeEventListener('error', onError);
       audio.removeEventListener('timeupdate', onTimeUpdate);
+      audio.removeEventListener('waiting', onWaiting);
+      audio.removeEventListener('canplay', onCanPlay);
+      audio.removeEventListener('playing', onPlaying);
     };
   }, []);
 
@@ -155,6 +167,7 @@ export function useGameEngine(): GameState & GameActions {
     if (!audio || !currentSong.audioUrl) return;
     audio.pause();
     setAudioError(null);
+    setIsAudioLoading(true);
     audio.src = currentSong.audioUrl;
     // Removed explicit audio.load() as setting src is enough and more stable on mobile
     setIsPlaying(false);
@@ -307,11 +320,11 @@ export function useGameEngine(): GameState & GameActions {
 
   return useMemo(() => ({
     currentSong, guesses, currentAttempt, unlockedDuration,
-    gameStatus, isPlaying, currentTime, volume, audioError,
+    gameStatus, isPlaying, currentTime, volume, audioError, isAudioLoading,
     play, pause, submitGuess, skip, nextSong, setSong, loadState, reset, setVolume, retryLoad,
   }), [
     currentSong, guesses, currentAttempt, unlockedDuration,
-    gameStatus, isPlaying, currentTime, volume, audioError,
+    gameStatus, isPlaying, currentTime, volume, audioError, isAudioLoading,
     play, pause, submitGuess, skip, nextSong, setSong, loadState, reset, setVolume, retryLoad,
   ]);
 }
