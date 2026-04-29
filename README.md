@@ -4,9 +4,7 @@
 
 A high-fidelity, real-time music guessing game powered by the [iTunes Search API](https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/). Challenge your music knowledge with various modes, from global hits to specific artist discographies.
 
-## 🚀 Play Now!
-
-[https://bartlomiejcwiklak.github.io/IDME/](https://bartlomiejcwiklak.github.io/IDME/)
+## 🚀 [Play Now!](https://bartlomiejcwiklak.github.io/IDME/)
 
 ---
 
