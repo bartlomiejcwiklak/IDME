@@ -22,6 +22,7 @@ import { build } from 'esbuild';
 import { writeFileSync, readFileSync, existsSync, rmSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { tmpdir } from 'node:os';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
@@ -50,7 +51,8 @@ const MODES = [
 // Bundle songs.ts (and its imports) to a temporary ESM file we can import here.
 // import.meta.env is undefined under Node, so itunes.ts falls back to calling
 // itunes.apple.com directly — exactly what we want from a non-throttled IP.
-const tmp = resolve(root, 'scripts', '.static-pools.bundle.mjs');
+// Written to the OS temp dir so this build artifact never lands in the repo.
+const tmp = resolve(tmpdir(), `idme-static-pools-${process.pid}.bundle.mjs`);
 await build({
   entryPoints: [resolve(root, 'src/data/songs.ts')],
   bundle: true,
