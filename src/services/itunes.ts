@@ -38,15 +38,17 @@ const BASE_SEARCH = PROXY ? `${PROXY}/search` : 'https://itunes.apple.com/search
 const BASE_LOOKUP = PROXY ? `${PROXY}/lookup` : 'https://itunes.apple.com/lookup';
 
 /**
- * Fetch with retry on 429/5xx. Apple throttles the Search API aggressively
- * (~20 requests/min per IP), so transient 429s are expected under load.
+ * Fetch with one quick retry on 429/5xx. Apple throttles the Search API
+ * aggressively (~20 requests/min per IP), so transient 429s are expected.
+ * We keep the backoff short because the caller falls back to a baked offline
+ * pool on failure — a slow retry storm would just delay that fallback.
  */
-async function fetchWithRetry(url: string, retries = 2): Promise<Response> {
+async function fetchWithRetry(url: string, retries = 1): Promise<Response> {
   for (let attempt = 0; ; attempt++) {
     const res = await fetch(url);
     const retryable = res.status === 429 || res.status >= 500;
     if (res.ok || !retryable || attempt >= retries) return res;
-    const delay = 1500 * 2 ** attempt + Math.random() * 500;
+    const delay = 600 * 2 ** attempt + Math.random() * 300;
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
 }
