@@ -37,10 +37,24 @@ const PROXY = _rawProxy
 const BASE_SEARCH = PROXY ? `${PROXY}/search` : 'https://itunes.apple.com/search';
 const BASE_LOOKUP = PROXY ? `${PROXY}/lookup` : 'https://itunes.apple.com/lookup';
 
+/**
+ * Fetch with retry on 429/5xx. Apple throttles the Search API aggressively
+ * (~20 requests/min per IP), so transient 429s are expected under load.
+ */
+async function fetchWithRetry(url: string, retries = 2): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(url);
+    const retryable = res.status === 429 || res.status >= 500;
+    if (res.ok || !retryable || attempt >= retries) return res;
+    const delay = 1500 * 2 ** attempt + Math.random() * 500;
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+}
+
 /** Resolve an artist name to their iTunes artistId (returns first match) */
 export async function lookupArtistId(artistName: string, country = 'us'): Promise<number | null> {
   const url = `${BASE_SEARCH}?term=${encodeURIComponent(artistName)}&entity=musicArtist&attribute=artistTerm&limit=5&country=${country}`;
-  const res = await fetch(url);
+  const res = await fetchWithRetry(url);
   if (!res.ok) return null;
   const data = await res.json();
   const artists: any[] = data.results ?? [];
@@ -53,7 +67,7 @@ export async function lookupArtistId(artistName: string, country = 'us'): Promis
 /** Fetch all album collectionIds for a given artistId */
 export async function lookupArtistAlbums(artistId: number, country = 'us'): Promise<number[]> {
   const url = `${BASE_LOOKUP}?id=${artistId}&entity=album&limit=200&country=${country}`;
-  const res = await fetch(url);
+  const res = await fetchWithRetry(url);
   if (!res.ok) return [];
   const data = await res.json();
   return (data.results ?? [])
@@ -64,7 +78,7 @@ export async function lookupArtistAlbums(artistId: number, country = 'us'): Prom
 /** Fetch all tracks with a preview URL for a given album collectionId */
 export async function lookupAlbumTracks(albumId: number, country = 'us'): Promise<ItunesTrack[]> {
   const url = `${BASE_LOOKUP}?id=${albumId}&entity=song&limit=200&country=${country}`;
-  const res = await fetch(url);
+  const res = await fetchWithRetry(url);
   if (!res.ok) return [];
   const data = await res.json();
   return (data.results ?? []).filter(
@@ -85,7 +99,7 @@ export async function searchItunes(
   const attrSegment = attribute ? `&attribute=${attribute}` : '';
   const fetchLimit = Math.min(limit * 2, 200);
   const url = `${BASE_SEARCH}?term=${encodeURIComponent(term)}&entity=song&media=music&limit=${fetchLimit}&country=${country}${attrSegment}`;
-  const res = await fetch(url);
+  const res = await fetchWithRetry(url);
   if (!res.ok) throw new Error(`iTunes API error: ${res.status}`);
   const data: ItunesResponse = await res.json();
   return data.results.filter(
@@ -138,7 +152,7 @@ export async function fetchTopChartsMeta(
     ? `${PROXY}/api/v2/${country}/music/${feedType}/${limit}/songs.json${genreSegment}`
     : newApiUrl;
 
-  const res = await fetch(url);
+  const res = await fetchWithRetry(url);
   if (!res.ok) throw new Error(`iTunes RSS error: ${res.status}`);
 
   const data = await res.json();
@@ -163,7 +177,10 @@ export async function fetchTopChartsMeta(
 export async function resolveTracksWithPreview(tracks: RssTrack[], country = 'us'): Promise<ItunesTrack[]> {
   const resolved = await Promise.all(
     tracks.map(async (t) => {
-      const results = await searchItunes(`${t.name} ${t.artistName}`, 1, country);
+      // One failed resolution shouldn't sink the whole batch
+      const results = await searchItunes(`${t.name} ${t.artistName}`, 1, country).catch(
+        () => [] as ItunesTrack[],
+      );
       return results[0] ?? null;
     })
   );

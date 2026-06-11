@@ -499,9 +499,72 @@ function isCleanTrack(song: Song): boolean {
   );
 }
 
+// ─── Pool cache ───────────────────────────────────────────────────────────────
+// The iTunes Search API throttles hard (~20 req/min per IP) and a pool build
+// fires up to ~15 requests, so cache built pools in localStorage. On API
+// failure we fall back to a stale cached pool rather than showing an error.
+
+const POOL_CACHE_PREFIX = 'idme:pool:v1:';
+const POOL_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+
+function readCachedPool(key: string, maxAgeMs: number): Song[] | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { savedAt: number; songs: Song[] };
+    if (!Array.isArray(parsed.songs) || parsed.songs.length === 0) return null;
+    if (Date.now() - parsed.savedAt > maxAgeMs) return null;
+    return parsed.songs;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedPool(key: string, songs: Song[]): void {
+  const value = JSON.stringify({ savedAt: Date.now(), songs });
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Quota exceeded — drop our other cached pools and retry once
+    try {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith(POOL_CACHE_PREFIX) && k !== key)
+        .forEach(k => localStorage.removeItem(k));
+      localStorage.setItem(key, value);
+    } catch { /* caching is best-effort */ }
+  }
+}
+
+function shuffled(songs: Song[]): Song[] {
+  const pool = [...songs];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool;
+}
+
 // ─── Pool fetcher ─────────────────────────────────────────────────────────────
 
 export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?: string): Promise<Song[]> {
+  const cacheKey = `${POOL_CACHE_PREFIX}${mode}:${(artistQuery ?? '').trim().toLowerCase()}`;
+
+  const cached = readCachedPool(cacheKey, POOL_CACHE_TTL);
+  if (cached) return shuffled(cached);
+
+  try {
+    const pool = await fetchSongPoolFromApi(mode, artistQuery);
+    if (pool.length > 0) writeCachedPool(cacheKey, pool);
+    return pool;
+  } catch (error) {
+    // API throttled or down — a stale pool is better than no game at all
+    const stale = readCachedPool(cacheKey, Infinity);
+    if (stale) return shuffled(stale);
+    throw error;
+  }
+}
+
+async function fetchSongPoolFromApi(mode: GameMode, artistQuery?: string): Promise<Song[]> {
   const modeConfig = MODE_CONFIG[mode];
   const isCharts = modeConfig.theme === 'charts';
 
@@ -565,11 +628,12 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
 
       // ── Strategy 2: Search fallback (catches features, fills gaps) ────────────
       // Search both "feat." and "ft." variants since iTunes is inconsistent in tagging.
+      const noTracks = () => [] as ItunesTrack[];
       const [plFeat, usFeat, plFt, usFt] = await Promise.all([
-        searchItunes(`feat. ${artistQuery}`, 200, 'pl'),
-        searchItunes(`feat. ${artistQuery}`, 200, 'us'),
-        searchItunes(`ft. ${artistQuery}`, 200, 'pl'),
-        searchItunes(`ft. ${artistQuery}`, 200, 'us'),
+        searchItunes(`feat. ${artistQuery}`, 200, 'pl').catch(noTracks),
+        searchItunes(`feat. ${artistQuery}`, 200, 'us').catch(noTracks),
+        searchItunes(`ft. ${artistQuery}`, 200, 'pl').catch(noTracks),
+        searchItunes(`ft. ${artistQuery}`, 200, 'us').catch(noTracks),
       ]);
 
       const existingIds = new Set(pool.map(s => s.id));
@@ -591,17 +655,22 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
         ? ['polskie przeboje', 'polska muzyka 2024']
         : ['top hits 2024', 'popular music'];
 
-      const poolMeta = await fetchTopChartsMeta(100, modeConfig.country, undefined, 'topsongs');
+      // RSS charts and search supplements are independent sources — losing
+      // one to throttling shouldn't take the other down with it.
+      const poolMeta = await fetchTopChartsMeta(100, modeConfig.country, undefined, 'topsongs')
+        .catch(() => []);
       const selected = poolMeta.sort(() => Math.random() - 0.5).slice(0, 7);
-      const gameTracks = await resolveTracksWithPreview(selected, modeConfig.country);
+      const gameTracks = selected.length > 0
+        ? await resolveTracksWithPreview(selected, modeConfig.country)
+        : [];
 
-      const [rssResults, ...searchResults] = await Promise.all([
-        Promise.resolve(gameTracks),
-        ...chartsQueries.map(q => searchItunes(q, 100, modeConfig.country)),
-      ]);
+      const searchSettled = await Promise.allSettled(
+        chartsQueries.map(q => searchItunes(q, 100, modeConfig.country)),
+      );
+      const searchResults = searchSettled.flatMap(r => (r.status === 'fulfilled' ? r.value : []));
 
       const seenChartsIds = new Set<string>();
-      [...rssResults, ...searchResults.flat()].forEach(t => {
+      [...gameTracks, ...searchResults].forEach(t => {
         const id = String(t.trackId);
         if (!seenChartsIds.has(id)) {
           pool.push(itunesToSong(t));
@@ -641,12 +710,16 @@ export async function fetchSongPool(mode: GameMode = 'global-all', artistQuery?:
         queries = modeConfig.region === 'polish' ? ['polska muzyka', 'polskie hity', 'pop polska'] : ['popular songs', 'top hits', 'all time hits'];
       }
 
-      const results = await Promise.all(
+      const settled = await Promise.allSettled(
         queries.map(q => searchItunes(q, 150, modeConfig.country))
       );
+      if (settled.every(r => r.status === 'rejected')) {
+        throw (settled[0] as PromiseRejectedResult).reason;
+      }
+      const results = settled.flatMap(r => (r.status === 'fulfilled' ? r.value : []));
 
       const seenIds = new Set<string>();
-      results.flat().forEach(t => {
+      results.forEach(t => {
         if (!seenIds.has(String(t.trackId))) {
           pool.push(itunesToSong(t));
           seenIds.add(String(t.trackId));
