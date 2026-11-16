@@ -223,16 +223,15 @@ export function useGameEngine(): GameState & GameActions {
   const normalise = (s: string) => (s || '').toLowerCase().trim();
 
   const getMainArtist = (artist: string) => {
-    // Split by common feature separators and take the first part
-    // Using a more robust regex that doesn't rely on specific spacing
-    return normalise(artist.split(/&|,|x|\/|\bfeat\.|\bft\.|\bwith\b/i)[0]);
+    // Split by common feature separators and take the first part.
+    // "x" only as a standalone word ("Mata x Bedoes"), never inside a name.
+    return normalise(artist.split(/&|,|\/|\bx\b|\bfeat\.|\bft\.|\bwith\b/i)[0]);
   };
 
   // ── Submit ────────────────────────────────────────────────────────────────────
   const submitGuess = useCallback((song: Song) => {
     if (gameStatus !== 'playing') return;
     // Match by trackId (id) or by normalised title+artist
-    const normalise = (s: string) => s.toLowerCase().trim();
     const isCorrect =
       song.id === currentSong.id ||
       (normalise(song.title) === normalise(currentSong.title) &&

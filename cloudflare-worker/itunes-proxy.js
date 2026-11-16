@@ -73,7 +73,7 @@ export default {
 
     // The new RSS charts API lives on its own host; everything else on itunes.
     const host = url.pathname.startsWith('/api/v2/')
-      ? 'https://rss.applemarketingtools.com'
+      ? 'https://rss.marketingtools.apple.com'
       : 'https://itunes.apple.com';
     const targetUrl = `${host}${url.pathname}${url.search}`;
     const now = Date.now();

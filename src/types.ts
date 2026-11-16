@@ -73,7 +73,10 @@ export interface SearchBarProps {
   disabled: boolean;
   searchCountry?: string; // 'us' | 'pl' etc — defaults to 'us'
   resetKey?: string;
-  songPool?: Song[]; // When provided, search filters this list locally (no iTunes call)
+  /** Songs the game can pick from. Searched locally when iTunes is unreachable. */
+  songPool: Song[];
+  /** Search only `songPool` and never call iTunes (artist discography mode). */
+  localOnly?: boolean;
 }
 
 export interface EndGameModalProps {

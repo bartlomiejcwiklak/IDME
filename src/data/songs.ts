@@ -1,4 +1,4 @@
-import { fetchTopChartsMeta, resolveTracksWithPreview, searchItunes, lookupArtistId, lookupArtistAlbums, lookupAlbumTracks, type ItunesTrack } from '../services/itunes';
+import { fetchTopChartsMeta, resolveTracksWithPreview, searchItunes, lookupArtistId, lookupArtistAlbums, lookupAlbumsTracks, type ItunesTrack } from '../services/itunes';
 import type { Song, GameMode } from '../types';
 import { MODE_CONFIG } from './modes';
 
@@ -535,8 +535,8 @@ function writeCachedPool(key: string, songs: Song[]): void {
   }
 }
 
-function shuffled(songs: Song[]): Song[] {
-  const pool = [...songs];
+function shuffled<T>(items: readonly T[]): T[] {
+  const pool = [...items];
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -604,39 +604,28 @@ export async function fetchSongPoolFromApi(mode: GameMode, artistQuery?: string)
       const queryLower = artistQuery.trim().toLowerCase();
       if (PREDEFINED_ARTIST_POOLS[queryLower]) {
         // Przetasuj i zwróć — żadnych filtrów, żadnego API
-        const staticPool = [...PREDEFINED_ARTIST_POOLS[queryLower]];
-        for (let i = staticPool.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [staticPool[i], staticPool[j]] = [staticPool[j], staticPool[i]];
-        }
-        return staticPool;
+        return shuffled(PREDEFINED_ARTIST_POOLS[queryLower]);
       }
-      const search = artistQuery.toLowerCase();
+      const search = queryLower;
 
       // ── Strategy 1: iTunes Lookup API (complete discography) ──────────────────
       // Resolve artistId → all albumIds → all tracks per album.
       // This is the only way to guarantee full coverage regardless of popularity.
-      const artistIdPl = await lookupArtistId(artistQuery, 'pl');
-      const artistIdUs = await lookupArtistId(artistQuery, 'us');
+      const [artistIdPl, artistIdUs] = await Promise.all([
+        lookupArtistId(artistQuery, 'pl'),
+        lookupArtistId(artistQuery, 'us'),
+      ]);
 
-      const albumIdSet = new Set<number>();
-      if (artistIdPl) {
-        const albums = await lookupArtistAlbums(artistIdPl, 'pl');
-        albums.forEach(id => albumIdSet.add(id));
-      }
-      if (artistIdUs) {
-        const albums = await lookupArtistAlbums(artistIdUs, 'us');
-        albums.forEach(id => albumIdSet.add(id));
-      }
+      const albumLists = await Promise.all([
+        artistIdPl ? lookupArtistAlbums(artistIdPl, 'pl') : [],
+        artistIdUs ? lookupArtistAlbums(artistIdUs, 'us') : [],
+      ]);
+      const albumIdSet = new Set<number>(albumLists.flat());
 
       if (albumIdSet.size > 0) {
-        // Fetch all tracks for every album in parallel
-        const albumTrackArrays = await Promise.all(
-          [...albumIdSet].map(albumId => lookupAlbumTracks(albumId, 'us').catch(() => [] as ItunesTrack[]))
-        );
+        const albumTracks = await lookupAlbumsTracks([...albumIdSet], 'us');
         const seenIds = new Set<number>();
-        pool = albumTrackArrays
-          .flat()
+        pool = albumTracks
           .filter(t => {
             if (seenIds.has(t.trackId)) return false;
             seenIds.add(t.trackId);
@@ -656,10 +645,10 @@ export async function fetchSongPoolFromApi(mode: GameMode, artistQuery?: string)
       // Search both "feat." and "ft." variants since iTunes is inconsistent in tagging.
       const noTracks = () => [] as ItunesTrack[];
       const [plFeat, usFeat, plFt, usFt] = await Promise.all([
-        searchItunes(`feat. ${artistQuery}`, 200, 'pl').catch(noTracks),
-        searchItunes(`feat. ${artistQuery}`, 200, 'us').catch(noTracks),
-        searchItunes(`ft. ${artistQuery}`, 200, 'pl').catch(noTracks),
-        searchItunes(`ft. ${artistQuery}`, 200, 'us').catch(noTracks),
+        searchItunes(`feat. ${artistQuery}`, { limit: 200, country: 'pl' }).catch(noTracks),
+        searchItunes(`feat. ${artistQuery}`, { limit: 200, country: 'us' }).catch(noTracks),
+        searchItunes(`ft. ${artistQuery}`, { limit: 200, country: 'pl' }).catch(noTracks),
+        searchItunes(`ft. ${artistQuery}`, { limit: 200, country: 'us' }).catch(noTracks),
       ]);
 
       const existingIds = new Set(pool.map(s => s.id));
@@ -685,13 +674,11 @@ export async function fetchSongPoolFromApi(mode: GameMode, artistQuery?: string)
       // one to throttling shouldn't take the other down with it.
       const poolMeta = await fetchTopChartsMeta(100, modeConfig.country, undefined, 'topsongs')
         .catch(() => []);
-      const selected = poolMeta.sort(() => Math.random() - 0.5).slice(0, 7);
-      const gameTracks = selected.length > 0
-        ? await resolveTracksWithPreview(selected, modeConfig.country)
-        : [];
+      // One bulk lookup resolves all chart entries to playable tracks.
+      const gameTracks = await resolveTracksWithPreview(poolMeta, modeConfig.country);
 
       const searchSettled = await Promise.allSettled(
-        chartsQueries.map(q => searchItunes(q, 100, modeConfig.country)),
+        chartsQueries.map(q => searchItunes(q, { limit: 100, country: modeConfig.country })),
       );
       const searchResults = searchSettled.flatMap(r => (r.status === 'fulfilled' ? r.value : []));
 
@@ -737,7 +724,7 @@ export async function fetchSongPoolFromApi(mode: GameMode, artistQuery?: string)
       }
 
       const settled = await Promise.allSettled(
-        queries.map(q => searchItunes(q, 150, modeConfig.country))
+        queries.map(q => searchItunes(q, { limit: 150, country: modeConfig.country }))
       );
       if (settled.every(r => r.status === 'rejected')) {
         throw (settled[0] as PromiseRejectedResult).reason;
@@ -801,68 +788,48 @@ export async function fetchSongPoolFromApi(mode: GameMode, artistQuery?: string)
       pool = pool.filter(isPolishSong);
     }
 
-    // BIAS INJECTION: Ensure biased artists or curated albums are always present
-    const biasedInPool = pool.filter(s => isBiasedArtist(s.artist));
+    // BIAS INJECTION: make sure curated gaming albums / VIP artists show up.
+    // Artist, decades, classics and genre modes get none — it would contaminate
+    // those pools with off-theme songs.
+    const noInjection =
+      mode === 'artist-discography' ||
+      ['decades', 'classics', 'rock', 'electronic', 'pop', 'indie'].includes(modeConfig.theme);
+    let injectTerms: string[] = [];
+    let injectLimit = 5;
+    let injectFilter: (s: Song) => boolean = isCleanTrack;
 
-    // For Gaming: Inject curated albums
-    if (mode === 'artist-discography' || modeConfig.theme === 'decades' || modeConfig.theme === 'classics'
-      || modeConfig.theme === 'rock' || modeConfig.theme === 'electronic' || modeConfig.theme === 'pop' || modeConfig.theme === 'indie') {
-      // No injection for artist-specific, decades, classics, or genre-specific modes
-      // to preserve pool integrity and prevent cross-genre contamination
+    if (noInjection) {
+      // keep the pool as is
     } else if (modeConfig.theme === 'gaming') {
-      const shuffleAlbums = [...GAMING_ALBUMS].sort(() => Math.random() - 0.5);
-      const targets = shuffleAlbums.slice(0, 10); // Inject 10 legendary albums
+      injectTerms = shuffled(GAMING_ALBUMS).slice(0, 10);
+      injectLimit = 10;
+      injectFilter = s => isGamingSong(s) && isCleanTrack(s);
+    } else if (pool.filter(s => isBiasedArtist(s.artist)).length < 20) {
+      injectTerms = shuffled(modeConfig.region === 'polish' ? POLISH_VIP : GLOBAL_VIP).slice(0, 8);
+      injectFilter = s =>
+        isCleanTrack(s) &&
+        (modeConfig.theme !== 'hiphop' || isHipHopSong(s)) &&
+        (modeConfig.region !== 'polish' || isPolishSong(s));
+    }
 
-      for (const album of targets) {
-        try {
-          const extra = await searchItunes(album, 10, modeConfig.country);
-          const filteredExtra = extra.map(itunesToSong).filter(s => isGamingSong(s) && isCleanTrack(s));
-
-          const existingIds = new Set(pool.map(s => s.id));
-          for (const s of filteredExtra) {
-            if (!existingIds.has(s.id)) {
-              pool.push(s);
-              existingIds.add(s.id);
-            }
-          }
-        } catch (e) { }
-      }
-    } else if (biasedInPool.length < 20) {
-      // For Other: Inject biased artists
-      const sourceList = modeConfig.region === 'polish' ? POLISH_VIP : GLOBAL_VIP;
-      const shuffleBias = [...sourceList].sort(() => Math.random() - 0.5);
-      const targets = shuffleBias.slice(0, 8); // Inject 8 random VIPs
-
-      for (const artist of targets) {
-        try {
-          const extra = await searchItunes(artist, 5, modeConfig.country);
-          const filteredExtra = extra.map(itunesToSong).filter(s => {
-            if (!isCleanTrack(s)) return false;
-            if (modeConfig.theme === 'hiphop' && !isHipHopSong(s)) return false;
-            if (modeConfig.region === 'polish' && !isPolishSong(s)) return false;
-            return true;
-          });
-
-          const existingIds = new Set(pool.map(s => s.id));
-          for (const s of filteredExtra) {
-            if (!existingIds.has(s.id)) {
-              pool.push(s);
-              existingIds.add(s.id);
-            }
-          }
-        } catch (e) { }
+    if (injectTerms.length > 0) {
+      const injected = await Promise.allSettled(
+        injectTerms.map(term => searchItunes(term, { limit: injectLimit, country: modeConfig.country })),
+      );
+      const existingIds = new Set(pool.map(s => s.id));
+      for (const r of injected) {
+        if (r.status !== 'fulfilled') continue;
+        for (const s of r.value.map(itunesToSong).filter(injectFilter)) {
+          if (existingIds.has(s.id)) continue;
+          pool.push(s);
+          existingIds.add(s.id);
+        }
       }
     }
 
     if (pool.length === 0) throw new Error('No songs found matching the criteria.');
 
-    // Fisher-Yates Shuffle
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-
-    return pool;
+    return shuffled(pool);
   } catch (error) {
     console.error('Failed to fetch song pool:', error);
     throw error;
